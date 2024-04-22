@@ -38,9 +38,9 @@ jobs:
             - name: Generate settings.xml for Maven Builds
               uses: whelk-io/maven-settings-xml-action@v22
               with:
-                repositories: '[{ "id": "some-repository", "url": "http://some.repository.url" }]'
+                repositories: '[{ "id": "some-repository", "url": "http://34.230.21.125:8081" }]'
                 # plugin_repositories: '[{ "id": "some-plugin-repository", "url": "http://some.plugin.repository.url" }]'
-                servers: '[{ "id": "some-server", "username": "some.user", "password": "some.password" }]'
+                servers: '[{ "id": "some-server", "username": "${{ secrets.USER }}", "password": "${{ secrets.PASS }}" }]'
             
 
             - name: Set up JDK 17
