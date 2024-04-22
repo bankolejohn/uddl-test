@@ -1,0 +1,82 @@
+/**
+ * Generalized helper methods for UDDL
+ */
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+package uddl
+
+  context UddlElement
+
+    /*
+     * Helper method that determines if a string is a UDDL grammar keyword
+     * 
+     * In same order as XText grammar file.
+     */
+    static def: isGrammarKeyword(str : String) : Boolean =
+      let strLower: String = str.toLowerCase() in
+        strLower = 'import' or
+        strLower = 'cdm' or
+        strLower = 'ldm' or
+        strLower = 'pdm' or
+        strLower = 'basis' or
+        strLower = 'domain' or
+        strLower = 'observable' or
+        strLower = 'centity' or
+        strLower = 'cassoc' or
+        --strLower = '/' or /* Not a valid ID. No need to check */
+        --strLower = '#' or /* Not a valid ID. No need to check */
+        strLower = 'cquery' or
+        strLower = 'ccquery' or
+        strLower = 'lunit' or
+        strLower = 'conv' or
+        strLower = 'aconv' or
+        strLower = 'str' or
+        strLower = 'ch' or
+        strLower = 'bool' or
+        strLower = 'int' or
+        strLower = 'nat' or
+        strLower = 'real' or
+        strLower = 'real+' or
+        strLower = 'enum' or
+        strLower = 'coord' or
+        strLower = 'csa' or
+        strLower = 'smsys' or
+        strLower = 'landmark' or
+        strLower = 'msys' or
+        strLower = 'msa' or
+        strLower = 'vtu' or
+        strLower = 'irc' or
+        strLower = 'rrc' or
+        strLower = 'rec' or
+        strLower = 'flsc' or
+        strLower = 'ec' or
+        strLower = 'msc' or
+        strLower = 'meas' or
+        strLower = 'maxis' or
+        strLower = 'mc' or
+        strLower = 'lentity' or
+        strLower = 'lassoc' or
+        strLower = 'lquery' or
+        strLower = 'lcquery' or
+        strLower = 'bool' or
+        strLower = 'octet' or
+        strLower = 'char' or
+        strLower = 'string' or
+        --strLower = 'string[' or /* not a valid id, no need to check */
+        strLower = 'enum' or
+        strLower = 'short' or
+        strLower = 'long' or
+        strLower = 'llong' or
+        strLower = 'double' or
+        strLower = 'ldouble' or
+        strLower = 'float' or
+        strLower = 'ushort' or
+        strLower = 'ulong' or
+        strLower = 'ullong' or
+        strLower = 'seq' or
+        strLower = 'arr' or
+        strLower = 'pentity' or
+        strLower = 'passoc' or
+        strLower = 'pquery' or
+        strLower = 'pcquery'
+endpackage

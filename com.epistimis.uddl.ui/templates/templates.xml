@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualAssociation" deleted="false" description="A conceptual Association represents a relationship between two or more conceptual Entities. " enabled="true" name="CASSOC">cassoc ${name} "${description}" :
+	${specializes:CrossReference(ConceptualEntity.specializes)}{
+	${cursor}	
+	basis: [ ${basisEntity:CrossReference(ConceptualAssociation.basisEntity)} ]
+	participants: [ ${participant:CrossReference(ConceptualAssociation.participant)} ]
+};</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualBasisEntity" deleted="false" description="A BasisEntity represents a unique domain concept and establishes a basis which can be used by conceptual Entities." enabled="true" id="3" name="BASIS">basis ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualCompositeQuery" deleted="false" description="A conceptual CompositeQuery is a collection of two or more conceptual Views. The “isUnion” attribute specifies whether the composed Views are intended to be mutually exclusive or not." enabled="true" id="6" name="CCQUERY">ccquery ${name} "${description}" {
+	isUnion
+	${cursor}
+};</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualComposition" deleted="false" description="A conceptual Composition is the mechanism that allows conceptual Entities to be constructed from other conceptual ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the conceptual Entity" enabled="true" id="54" name="CCOMP">${type:CrossReference(ConceptualComposableElement.type)} ${rolename}[${lowerBound} : ${upperBound}] "${description}" : ${specializes:CrossReference(ConceptualCharacteristic.specializes)} ;
+ ${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualDataModel" deleted="false" description="A ConceptualDataModel is a container for CDM Elements." enabled="true" id="7" name="CDM">cdm ${name}  "${description}"  {
+	${cursor}
+}</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualDomain" deleted="false" description="A Domain represents a space defined by a set of BasisEntities relating to well understood concepts by practitioners within a particular domain." enabled="true" id="13" name="DOMAIN">domain ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualEntity" deleted="false" description="A conceptual Entity represents a domain concept in terms of its Observables and other composed conceptual Entities. Since a conceptual Entity is built only from conceptual ComposableElements, it is independent of any specific data representation, units, or reference frame." enabled="true" id="8" name="CENTITY">centity ${name} "${description}" : ${specializes:CrossReference(ConceptualEntity.specializes)} {
+	${cursor}	
+	basis: [ ${basisEntity:CrossReference(ConceptuaEntity.basisEntity)} ]
+};
+
+	</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualObservable" deleted="false" description="An Observable is something that can be observed but not further characterized, and is typically quantified through measurements of the physical world. An observable is independent of any specific data representation, units, or reference frame. For example, “length” may be thought of as an observable in that it can be measured, but at the conceptual level the nature of the measurement is not specified." enabled="true" id="40" name="OBSERVABLE">observable ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualParticipant" deleted="false" description="A conceptual Composition is the mechanism that allows conceptual Entities to be constructed from other conceptual ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the conceptual Entity" enabled="true" id="55" name="CPART">${type:CrossReference(ConceptualEntity.type)} ${rolename}[${lowerBound} : ${upperBound} ] "${description}" : ${specializes:CrossReference(ConceptualCharacteristic.specializes)} {
+		src: [${sourceLowerBound} : ${sourceUpperBound}]
+		path: ${ConceptualPathNode}
+};
+ ${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualQuery" deleted="false" description="A conceptual Query is a specification that defines the content of conceptual View as a set of conceptual Characteristics projected from a selected set of related conceptual Entities. The “specification” attribute captures the specification of a Query as defined by the Query grammar." enabled="true" id="11" name="CQUERY">cquery ${name} "${description}" { 
+spec: "${specification}"
+};
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.ConceptualQueryComposition" deleted="false" description="A conceptual QueryComposition is the mechanism that allows a conceptual CompositeQuery to be constructed from conceptual Queries and other conceptual CompositeQueries. The “rolename” attribute defines the name of the composed conceptual View within the scope of the composing conceptual CompositeQuery. The “type” of a conceptual QueryComposition is the conceptual View being used to construct the conceptual CompositeQuery." enabled="true" id="80" name="CQCOMP">${type:CrossReference(ConceptualQueryComposition.type)} ${rolename} ;
+ ${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.DataModel" deleted="false" description="A DataModel is a container for ConceptualDataModels, LogicalDataModels, and PlatformDataModels" enabled="true" id="14" name="DM">dm ${name} "${description}"  {
+	
+	${cursor}
+	
+}</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.DataModel" deleted="false" description="Create a complete set of measures for an Enum" enabled="true" name="ENUM_MEASURES">ldm   ${name}
+{
+	enum ${name} "Basic ${name} values " [ ${cursor} ];
+
+	vtu ${name} Units.UnitlessDimensionless.Unitless ${name}UnitLess "Standard ${name} " ;
+	meas   ${name}_Meas  "A measurement for a ${name} value that uses enums" -&gt; ${realizes}
+	{
+		axis: [${name}_MeasAxis] sys: MeasurementSystems.EnumerationMeasurementSystem.AbstractDiscreteSetMeasurementSystem.AbstractDiscreteSetMeasurementSystem
+	};
+	maxis    ${name}_MeasAxis  "An instance of the ${name} MeasurementSystemAxis with a uniqueness constraint." -&gt; ${realizes}
+	{
+		msaxis:  MeasurementSystems.EnumerationMeasurementSystem.AbstractDiscreteSetMeasurementSystem.Abstract_DiscreteSet_MeasSysAxis 
+		vtu: [ ${name}UnitLess ]
+		![ "IsUnique"]
+	};
+}
+</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.DataModel" deleted="false" description="A set of measures for a unitless integral value (e.g. a count )" enabled="true" name="INT_MEASURES">ldm   ${name}
+{
+	int ${name} "Basic ${name} values - as integers" ;
+
+	vtu ${name} Units.UnitlessDimensionless.Unitless ${name}UnitLess "Standard ${name}" ;
+
+	meas ${name}_Meas "Measurement representing a ${name} as a single element" -&gt; ${realizes}
+	{
+		axis: [ ${name}_MeasAxis ] sys: MeasurementSystems.CountingMeasurementSystem.CountMeasurementSystem.Count_MeasSys
+	};
+	maxis ${name}_MeasAxis -&gt; ${realizes}
+	{
+		msaxis: FACE_Shared_Data_Model_Logical.MeasurementSystems.CountingMeasurementSystem.CountMeasurementSystem.Count_MeasSysAxis
+	};
+}
+</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.DataModel" deleted="false" description="Creates an entire set of measures for a textual Observable" enabled="true" name="STRING_MEASURES">ldm   ${name}
+{
+	str ${name} "Basic ${name} values - as strings" ;
+
+	vtu ${name} Units.UnitlessDimensionless.Unitless ${name}UnitLess "Standard ${name} " ;
+
+	meas ${name}_Meas "Measurement representing a ${name} as a single element" -&gt; ${realizes}
+	{
+		axis: [ ${name}_MeasAxis ] sys: MeasurementSystems.InformationElementMeasurementSystem.TextMeasurementSystem.Text_UTF8_MeasSys
+	};
+	maxis ${name}_MeasAxis -&gt; ${realizes}
+	{
+		msaxis: MeasurementSystems.InformationElementMeasurementSystem.TextMeasurementSystem.Text_MeasSysAxis
+	};
+}
+</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalAffineConversion" deleted="false" description="An AffineConversion is a relationship between two ConvertibleElements in the form mx+b" enabled="true" id="1" name="ACONV">aconv ${name} "${description}" {
+	${source:CrossReference(LogicalAssociation.source)} -(m: ${conversionFactor} b:  ${offset})-&gt; ${destination:CrossReference(LogicalAssociation.destination)}	
+};
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalAssociation" deleted="false" description="A logical Association represents a relationship between two or more logical Entities. The logical Entities participating in the logical Association may be specified locally or in its generalized types. In addition, there may be one or more logical ComposableElements that characterize the relationship. Logical Associations are logical Entities that may also participate in other logical Associations." enabled="true" id="24" name="LASSOC">lassoc ${name} "${description}" : ${specializes:CrossReference(LogicalEntity.specializes)} -&gt; ${realizes:CrossReference(LogicalEntity.realizes)}{
+	${cursor}
+};
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalBoolean" deleted="false" description="A Boolean is a value type representing the two values TRUE and FALSE." enabled="true" id="4" name="BOOL">bool ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalCharacter" deleted="false" description="A Character is a value type representing characters from any character set." enabled="true" id="9" name="CH">ch ${name} "${description}" ;
+${cursor}
+	</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalCompositeQuery" deleted="false" description="A logical CompositeQuery is a collection of two or more logical Views. The “isUnion” attribute specifies whether the composed Views are intended to be mutually exclusive or not." enabled="true" id="25" name="LCQUERY">lcquery ${name} "${description}" -&gt; ${realizes:CrossReference(LogicalCompositeQuery.realizes)} {
+	isUnion
+	${cursor}
+ };
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalComposition" deleted="false" description="A logical Composition is the mechanism that allows logical Entities to be constructed from other logical ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the logical Entity. The “lowerBound” and “upperBound” define the multiplicity of the composed logical Entity. An “upperBound” multiplicity of –1 represents an unbounded sequence." enabled="true" id="87" name="LCOMP">${type:CrossReference(LogicalComposableElement.type)} ${rolename}[ ${lowerBound} : ${upperBound}] "${description}": ${specializes:CrossReference(LogicalCharacteristic.specializes)} -&gt; ${realizes:CrossReference(LogicalComposition.realizes)}; 
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalConversion" deleted="false" description="A Conversion is a relationship between two ConvertibleElements that describes how to transform measured quantities between two Units." enabled="true" id="58" name="CONV">conv ${name} "${description}" {
+   ${source:CrossReference(LogicalConversion.source)} -()&gt; ${destination:CrossReference(LogicalConversion.destination)}
+ };
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalCoordinateSystem" deleted="false" description="A CoordinateSystem is a system which uses one or more coordinates to uniquely determine the position of a point in an N-dimensional space. The coordinate system is comprised of multiple CoordinateSystemAxis which completely span the space. Coordinates are quantified relative to the CoordinateSystemAxis. It is not required that the dimensions be ordered or continuous." enabled="true" id="10" name="COORD">coord ${name} "${description}" {
+   axis: "${axisRelationshipDescription}"
+   angleEq: "${angleEquation}"
+   distanceEq: "${distanceEquation}"
+   [ ${axis:CrossReference(LogicalCoordinateSystem.axis)} ${cursor} ]
+};</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalCoordinateSystemAxis" deleted="false" description="A CoordinateSystemAxis represents a dimension within a CoordinateSystem." enabled="true" id="12" name="CSA">csa	 ${name} "${description}" ;
+${cursor}
+</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalDataModel" deleted="false" description="A LogicalDataModel is a container for LDM Elements" enabled="true" id="26" name="LDM">ldm ${name}  "${description}" {
+	${cursor}
+}</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalDataModel" deleted="false" description="Create a complete set of measures for an Enum" enabled="true" name="ENUM_MEASURES(L)">ldm   ${name}
+{
+	enum ${name} "Basic ${name} values " [ ${cursor} ];
+
+	vtu ${name} Units.UnitlessDimensionless.Unitless ${name}UnitLess "Standard ${name} " ;
+	meas   ${name}_Meas  "A measurement for a ${name} value that uses enums" -&gt; ${realizes}
+	{
+		axis: [${name}_MeasAxis] sys: MeasurementSystems.EnumerationMeasurementSystem.AbstractDiscreteSetMeasurementSystem.AbstractDiscreteSetMeasurementSystem
+	};
+	maxis    ${name}_MeasAxis  "An instance of the ${name} MeasurementSystemAxis with a uniqueness constraint." -&gt; ${realizes}
+	{
+		msaxis:  MeasurementSystems.EnumerationMeasurementSystem.AbstractDiscreteSetMeasurementSystem.Abstract_DiscreteSet_MeasSysAxis 
+		vtu: [ ${name}UnitLess ]
+		![ "IsUnique"]
+	};
+}
+</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalDataModel" deleted="false" description="A set of measures for a unitless integral value (e.g. a count )" enabled="true" name="INT_MEASURES(L)">ldm   ${name}
+{
+	int ${name} "Basic ${name} values - as integers" ;
+
+	vtu ${name} Units.UnitlessDimensionless.Unitless ${name}UnitLess "Standard ${name}" ;
+
+	meas ${name}_Meas "Measurement representing a ${name} as a single element" -&gt; ${realizes}
+	{
+		axis: [ ${name}_MeasAxis ] sys: MeasurementSystems.CountingMeasurementSystem.CountMeasurementSystem.Count_MeasSys
+	};
+	maxis ${name}_MeasAxis -&gt; ${realizes}
+	{
+		msaxis: FACE_Shared_Data_Model_Logical.MeasurementSystems.CountingMeasurementSystem.CountMeasurementSystem.Count_MeasSysAxis
+	};
+}
+</template>
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalDataModel" deleted="false" description="Creates an entire set of measures for a textual Observable" enabled="true" name="STRING_MEASURES(L)">ldm   ${name}
+{
+	str ${name} "Basic ${name} values - as strings" ;
+
+	vtu ${name} Units.UnitlessDimensionless.Unitless ${name}UnitLess "Standard ${name} " ;
+
+	meas ${name}_Meas "Measurement representing a ${name} as a single element" -&gt; ${realizes}
+	{
+		axis: [ ${name}_MeasAxis ] sys: MeasurementSystems.InformationElementMeasurementSystem.TextMeasurementSystem.Text_UTF8_MeasSys
+	};
+	maxis ${name}_MeasAxis -&gt; ${realizes}
+	{
+		msaxis: MeasurementSystems.InformationElementMeasurementSystem.TextMeasurementSystem.Text_MeasSysAxis
+	};
+}
+</template>
+
+<template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalEntity" deleted="false" description="A logical Entity “realizes” a conceptual Entity in terms of Measurements and other logical Entities. Since a logical Entity is built from logical Measurements, it is independent of any specific platform data representation. A logical Entity's composition hierarchy is consistent with the composition hierarchy of the conceptual Entity that it realizes. The logical Entity’s composed Entities realize one to one the conceptual Entity’s composed Entities; the logical Entity’s composed Measurements realize many to one the conceptual Entity’s composed Observables. A logical Entity “realizes” a conceptual Entity in terms of Measurements and other logical Entities. Since a logical Entity is built from logical Measurements, it is independent of any specific platform data representation. A logical Entity's composition hierarchy is consistent with the composition hierarchy of the conceptual Entity that it realizes. The logical Entity’s composed Entities realize one to one the conceptual Entity’s composed Entities; the logical Entity’s composed Measurements realize many to one the conceptual Entity’s composed Observables. " enabled="true" id="28" name="LENTITY">lentity ${name} "${description}" : ${specializes:CrossReference(LogicalEntity.specializes)} -&gt; ${realizes:CrossReference(LogicalEntity.realizes)} {
+		${cursor}
+};</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalEnumerated" deleted="false" description="An Enumerated is a value type representing a set of named values, each with specific meaning." enabled="true" id="17" name="ENUM">enum	${name} "${description}"  stdRef: "${standardReference}"
+	[ ${cursor} ];	
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalEnumeratedSet" deleted="false" description="EXTENSION: allowing label to be a LogicalEnumeratedSet enables taxonomy definitions via enumerations" enabled="true" id="81" name="LENUMSET">( ${name} "${description}"
+	[
+		${cursor}
+	]
+ )
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalEnumerationConstraint" deleted="false" description="An EnumerationConstraint identifies a subset of enumerated values (EnumerationLabel) considered valid for an Enumerated value type of a MeasurementAxis." enabled="true" id="16" name="EC">ec  ${name} "${description}" [ ${cursor} ] </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalEnumerationLabel" deleted="false" description="An EnumerationLabel defines a named member of an Enumerated value set." enabled="true" id="82" name="LENUMLABEL">( ${name} "${description}" )
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalFixedLengthStringConstraint" deleted="false" description="A FixedLengthStringConstraint specifies a defined set of meaningful values for a String of a specific fixed length. The “length” attribute defines the fixed length, an integer value greater than 0." enabled="true" id="20" name="FLSC">flsc ${name} [ ${length} ] "${description}";
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalInteger" deleted="false" description="An Integer is a value type representing integer numbers." enabled="true" id="21" name="INT">int ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalIntegerRangeConstraint" deleted="false" description="An IntegerRangeConstraint specifies a defined range of meaningful values for an Integer or Natural. The “upperBound” is greater than or equal to the “lowerBound”. The defined range is inclusive of the “upperBound” and “lowerBound”. " enabled="true" id="22" name="IRC">irc ${name} [ ${lowerBound:int} : ${upperBound:int}] "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalLandmark" deleted="false" description="A Landmark is a named, recognizable or artificial feature used to locate a ReferencePoint in a measurable space." enabled="true" name="LANDMARK">landmark ${name} "${description}" ;
+${cursor}</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalMeasurement" deleted="false" description="A Measurement realizes an Observable as a set of quantities that can be recorded for each axis of a MeasurementSystem. A Measurement contains the specific implementation details optionally including an override of the default ValueType and Unit for each axis as well as the constraints over that space for which the MeasurementSystem is valid." enabled="true" id="34" name="MEAS">meas ${name} "${description}" -&gt; ${realizes:CrossReference(LogicalMeasurement.realizes)} {
+	${cursor}
+	axis: [ ${measurementAxis:CrossReference(LogicalMeasurement.measurementAxis)} ]
+	sys: ${measurementSystem:CrossReference(LogicalMeasurement.measurementSystem)}
+};
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalMeasurementAxis" deleted="false" description="A MeasurementAxis optionally establishes constraints for a MeasurementSystemAxis and may optionally override its default units and value types." enabled="true" id="36" name="MSAXIS">maxis ${name} "${description}" -&gt; ${realizes:CrossReference(LogicalMeasurementAxis.realizes)} {
+	vtu: [${valueTypeUnit:CrossReference(LogicalMeasurementAxis.valueTypeUnit)} ]
+	msaxis: ${measurementSystemAxis:CrossReference(LogicalMeasurementAxis.measurementSystemAxis)}
+	${cursor} 
+};
+
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalMeasurementConversion" deleted="false" description="A MeasurementConversion is a relationship between two Measurements that describes how to transform measured quantities between those Measurements. The conversion is captured as a set of equations in the “equation” attribute. The specific format of “equation” is undefined. The loss introduced by the conversion equations is captured in the “conversionLossDescription” attribute. The specific format of “conversionLossDescription” is undefined." enabled="true" id="33" name="MC">mc ${name} "${description}" {
+	 ${source:CrossReference(LogicalMeasurementSystem.source)} -(${equation} )&gt; ${destination:CrossReference(LogicalMeasurementSystem.destination)}
+	 loss: "${conversionLossDescription}"
+};
+${cursor}</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalMeasurementSystem" deleted="false" description="A MeasurementSystem relates a CoordinateSystem to an origin and orientation for the purpose of establishing a common basis for describing points in an N-dimensional space. Defining a MeasurementSystem establishes additional properties of the CoordinateSystem including units and value types for each axis, and a set of reference points that can be used to establish an origin and indicate the direction of each axis." enabled="true" id="38" name="MSYS">msys ${name} "${description}" { 
+	maxis: [ ${ measurementSystemAxis:CrossReference(LogicalMeasurementSystem.measurementSystemAxis)} ]
+	coord: ${coordinateSystem:CrossReference(LogicalMeasurementSystem.coordinateSystem)}
+	${cursor} 	
+};</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalMeasurementSystemAxis" deleted="false" description="A MeasurementSystemAxis establishes additional properties for a CoordinateSystemAxis including units and value types." enabled="true" id="35" name="MSA">msa ${name} "${description}" { 
+	axis: ${axis:CrossReference(LogicalCoordinateSystemAxis.axis)}
+	vtu: [ ${defaultValueTypeUnit:CrossReference(LogicalMeasurementSystemAxis.defaultValueTypeUnit)}]
+	${cursor}			
+	};
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalMeasurementSystemConversion" deleted="false" description="A MeasurementSystemConversion is a relationship between two MeasurementSystems that describes how to transform measured quantities between those MeasurementSystems. The conversion is captured as a set of equations in the “equation” attribute. The specific format of “equation” is undefined. The loss introduced by the conversion equations is captured in the “conversionLossDescription” attribute. The specific format of “conversionLossDescription” is undefined." enabled="true" id="37" name="MSC">msc ${name} "${description}" { 
+${source:CrossReference(LogicalMeasurementSystem.source)} -(${equation} )&gt; ${destination:CrossReference(LogicalMeasurementSystem.destination)}
+	loss: "${conversionLossDescription}"
+};
+${cursor}
+		</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalNatural" deleted="false" description="A Natural is a value type representing the non-negative integers." enabled="true" id="39" name="NAT">nat ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalNonNegativeReal" deleted="false" description="A NonNegativeReal is a value type representing non-negative real numbers." enabled="true" id="60" name="REAL+">real+	${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalParticipant" deleted="false" description="A logical Participant is the mechanism that allows a logical Association to be constructed between two or more logical Entities. The “type” of a logical Participant is the logical Entity being used to construct the logical Association. The “sourceLowerBound” and “sourceUpperBound” attributes define the multiplicity of the logical Association relative to the Participant. A “sourceUpperBound” multiplicity of –1 represents an unbounded sequence. The “path” attribute of the Participant describes the chain of entity characteristics to traverse to reach the subject of the association beginning with the entity referenced by the “type” attribute." enabled="true" id="88" name="LPART">${type:CrossReference(LogicalParticipant.type)} ${rolename}[${lowerBound:int} : ${upperBound:int}] "${description}" : ${specializes:CrossReference(LogicalCharacteristic.specializes)} -&gt; ${realizes:CrossReference(LogicalParticipant.realizes)} {
+			source: [${sourceLowerBound} : ${sourceUpperBound}]
+			path: ${path}
+		};
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalQuery" deleted="false" description="A logical Query is a specification that defines the content of logical View as a set of logical Characteristics projected from a selected set of related logical Entities. The “specification” attribute captures the specification of a Query as defined by the Query grammar." enabled="true" id="31" name="LQUERY">lquery ${name} "${description}" -&gt; ${realizes:CrossReference(LogicalQuery.realizes)}{
+	spec: "${specification}"
+};
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalQueryComposition" deleted="false" description="A logical QueryComposition is the mechanism that allows a logical CompositeQuery to be constructed from logical Queries and other logical CompositeQueries. The “rolename” attribute defines the name of the composed logical View within the scope of the composing logical CompositeQuery. The “type” of a logical QueryComposition is the logical View being used to construct the logical CompositeQuery." enabled="true" id="89" name="LQCOMP">${type:CrossReference(LogicalEntity.type)} ${rolename} -&gt; ${realizes:CrossReference(LogicalQueryComposition.realizes)} ;
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalReal" deleted="false" description="A Real is a value type representing real numbers." enabled="true" id="45" name="REAL">real	${name} "${description}";
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalRealRangeConstraint" deleted="false" description="A RealRangeConstraint specifies a defined range of meaningful values for a Real or NonNegativeReal. The “upperBound” is greater than or equal to the “lowerBound”." enabled="true" id="62" name="RRC">rrc ${name} [${lowerBound} : ${upperBound} ] "${description}" ;
+	${cursor}
+
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalReferencePoint" deleted="false" description="A ReferencePoint is an identifiable point (landmark) that can be used to provide a basis for locating and/or orienting a MeasurementSystem." enabled="true" id="84" name="LREFPOINT">(
+	${name} "${description}"
+	landmark: ${landmark:CrossReference(LogicalReferencePoint.landmark)}
+	[ ${cursor} ]
+ )
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalReferencePointPart" deleted="false" description="A ReferencePointPart is a value for one ValueTypeUnit in a ValueTypeUnit set that is used to identify a specific point along an axis." enabled="true" id="86" name="LREFPOINTPART">( ${axis:CrossReference(LogicalReferencePointPart.axis)} "${value}" ${valueTypeUnit:CrossReference(LogicalValueTypeUnit.valueTypeUnit)} )
+ ${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalRegularExpressionConstraint" deleted="false" description="A RegularExpressionConstraint specifies a defined set of meaningful values for a String in the form of a regular expression." enabled="true" id="61" name="REC">rec ${name} [	 "${expression}"  ] "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalStandardMeasurementSystem" deleted="false" description="A StandardMeasurementSystem is used to represent an open, referenced measurement system without requiring the detailed modeling of the measurement system. The reference should be unambiguous and allows for full comprehension of the underlying measurement system." enabled="true" id="48" name="SMSYS">smsys ${name} "${description}" { 
+	refStd: "${referenceStandard}"
+};
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalString" deleted="false" description="A String is a value type that represents a variable length sequence of characters." enabled="true" name="STR">str ${name} "${description}" ;
+${cursor}</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalUnit" deleted="false" description="A Unit is a defined magnitude of quantity used as a standard for measurement." enabled="true" id="32" name="LUNIT">lunit ${name} "${description}" ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.LogicalValueTypeUnit" deleted="false" description="A ValueTypeUnit defines the logical representation of a MeasurementSystemAxis or MeasurementAxis value type in terms of a Unit and ValueType pair." enabled="true" name="VTU">vtu ${valueType:CrossReference(LogicalValueTypeUnit.valueType)} ${unit:CrossReference(LogicalValueTypeUnit.unit)} ${name} "${description}"
+ { ! ${cursor} }
+;</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformArray" deleted="false" description="An Array is used to represent an array of Octets. This can be used to realize a StandardMeasurementSystem." enabled="true" id="2" name="ARR">arr [ ${size:int} ] ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformAssociation" deleted="false" description="A platform Association represents a relationship between two or more platform Entities. The platform Entities participating in the platform Association may be specified locally or in its generalized types. In addition, there may be one or more platform ComposableElements that characterize the relationship. Platform Associations are platform Entities that may also participate in other platform Associations." enabled="true" id="42" name="PASSOC">passoc ${name} "${description}" : ${specializes:CrossReference(PlatformEntity.specializes)} {
+	${cursor}
+	participants: [ ${PPART} ]
+}; </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformBoolean" deleted="false" description="A Boolean is a data type that represents the values TRUE and FALSE." enabled="true" id="5" name="BOOL">bool ${name}	"${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)};
+ ${cursor}
+  </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformBoundedString" deleted="false" description="BoundedString is a data type that represents a variable length sequence of Char (all 8-bit quantities except NULL). The length is a non-negative integer, and is available at run-time. The “maxLength” attribute defines the maximum length of the BoundedString, an integer value greater than 0" enabled="true" id="90" name="PBSTRING">string[${maxLenght}] ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)};
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformChar" deleted="false" description="A Char is a data type that represents characters from any single byte character set." enabled="true" id="57" name="CHAR">char ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+	</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformCharArray" deleted="false" description="A CharArray is a data type that represents a fixed length sequence of Char (all 8-bit quantities except NULL). The length is a positive integer, and is available at run-time." enabled="true" name="CHAR_ARRAY">char[${length:int}] ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformCompositeQuery" deleted="false" description="A platform CompositeQuery is a collection of two or more platform Views." enabled="true" name="PCQUERY">pcquery ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformView.realizes)} {
+	isUnion
+	${cursor}
+};</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformComposition" deleted="false" description="A platform Composition is the mechanism that allows platform Entities to be constructed from other platform ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the platform Entity. The “lowerBound” and “upperBound” define the multiplicity of the composed platform Entity. An “upperBound” multiplicity of –1 represents an unbounded sequence. If “type” is a Primitive, the “precision” attribute specifies a measure of the detail in which a quantity is captured." enabled="true" id="94" name="PCOMP">${type:CrossReference(PlatformComposition.type)} ${rolename} [${lowerBound} : ${upperBound}]  "${description}" : ${specializes:CrossReference(PlatformCharacteristic.specializes)} -&gt; ${realizes:CrossReference(PlatformComposition.realizes)} 
+{
+		prec: ${precision:float}
+};
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformDataModel" deleted="false" description="A PlatformDataModel is a container for platform Data Model elements." enabled="true" id="43" name="PDM">pdm ${name} "${description}" {
+	${cursor}
+}</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformDouble" deleted="false" description="A Double is a real data type that represents an IEEE double precision floating-point number." enabled="true" id="15" name="DOUBLE">double	${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ; 
+ ${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformEntity" deleted="false" description="A platform Entity “realizes” a logical Entity in terms of PhysicalDataTypes and other platform Entities composed of PhysicalDataTypes. A platform Entity’s composition hierarchy is consistent with the composition hierarchy of the logical Entity that it realizes. The platform Entity’s composed Entities realize one to one the logical Entity’s composed Entities; the platform Entity’s composed PhysicalDataTypes realize many to one the logical Entity’s composed Measurements." enabled="true" id="44" name="PENTITY">pentity ${name} "${description}": ${specializes:CrossReference(PlatformEntity.specializes)} -&gt; ${realizes:CrossReference(PlatformEntity.realizes)} {
+	${PCOMP}
+} </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformEnumeration" deleted="false" description="An Enumeration is a data type that represents an ordered list of identifiers." enabled="true" id="18" name="ENUM">enum ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)}} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformFixed" deleted="false" description="A Fixed is a real data type that represents a fixed-point decimal number of up to 31 significant digits. The “digits” attribute defines the total number of digits, a non-negative integer value less than or equal to 31. The “scale” attribute defines the position of the decimal point in the number, and cannot be greater than “digits”." enabled="true" id="91" name="PFIXED">fixed[${digits:int} . ${scale:int} ] ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformFloat" deleted="false" description="A Float is a real data type that represents an IEEE single precision floating-point number." enabled="true" id="19" name="FLOAT">float ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+ ${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformLong" deleted="false" description="A Long is an integer data type that represents integer values in the range –2^31 to (2^31 – 1)." enabled="true" id="30" name="LONG">long ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformLongDouble" deleted="false" description="A LongDouble is a real data type that represents an IEEE extended double precision floating- point number (having a signed fraction of at least 64 bits and an exponent of at least 15 bits)" enabled="true" id="27" name="LDOUBLE">ldouble ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformLongLong" deleted="false" description="A LongLong is an integer data type that represents integer values in the range –2^63 to (2^63 – 1). " enabled="true" id="29" name="LLONG">llong ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformOctet" deleted="false" description="An Octet is an 8-bit quantity that is guaranteed not to undergo any conversion during transfer between systems." enabled="true" id="41" name="OCTET">octet ${name}	"${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformParticipant" deleted="false" description="A platform Participant is the mechanism that allows a platform Association to be constructed between two or more platform Entities. The “type” of a platform Participant is the platform Entity being used to construct the platform Association. The “sourceLowerBound” and “sourceUpperBound” attributes define the multiplicity of the platform Association relative to the Participant. A “sourceUpperBound” multiplicity of –1 represents an unbounded sequence. The “path” attribute of the Participant describes the chain of entity characteristics to traverse to reach the subject of the association beginning with the entity referenced by the “type” attribute." enabled="true" id="95" name="PPART">${type:CrossReference(PlatformParticipant.type)} ${rolename} [${lowerBound} : ${upperBound}]  "${description}" : ${specializes:CrossReference(PlatformCharacteristic.specializes)} -&gt; ${realizes:CrossReference(PlatformParticipant.realizes)} {
+		source: [${sourceLowerBound:int} : ${sourceUpperBound:int} ]
+		path: ${path}
+};
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformQuery" deleted="false" description="A platform Query is a specification that defines the content of platform View as a set of platform Characteristics projected from a selected set of related platform Entities. The “specification” attribute captures the specification of a Query as defined by the Query grammar." enabled="true" id="96" name="PQUERY">pquery ${name} "${description}"  -&gt; ${realizes:CrossReference(PlatformView.realizes)} {
+		spec: "${specification}"
+};
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformQueryComposition" deleted="false" description="A platform QueryComposition is the mechanism that allows a platform CompositeQuery to be constructed from platform Queries and other platform CompositeQueries." enabled="true" name="PQCOMP">${type:CrossReference(PlatformQueryComposition.type)}  ${rolename} -&gt; ${realizes:CrossReference(PlatformQueryComposition.realizes)} ;
+${cursor}</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformSequence" deleted="false" description="A Sequence is used to represent a sequence of Octets. This can be used to realize a StandardMeasurementSystem." enabled="true" id="92" name="PSEQ">seq[${maxSize:int}] ${name} "${description}" -&gt;${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformShort" deleted="false" description="A Short is an integer data type that represents integer values in the range –2^15 to (2^15 – 1)." enabled="true" id="47" name="SHORT">short ${name} "${description}"  -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformString" deleted="false" description="A String is a data type that represents a variable length sequence of Char (all 8-bit quantities except NULL). The length is a non-negative integer, and is available at run-time." enabled="true" id="50" name="STRING">string ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformStruct" deleted="false" description="A platform Struct is a structured realization of a logical AbstractMeasurement. It is composed of PlatformDataTypes (i.e., Primitives and other Structs composed of Primitives). A platform Struct’s composition hierarchy is consistent with the composition hierarchy of the logical AbstractMeasurement that it realizes." enabled="true" id="85" name="STRUCT">struct ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} {
+	${cursor}
+};
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformStructMember" deleted="false" description="A StructMember is the mechanism that allows Structs to be constructed from other PlatformDataTypes. The “type” of a StructMember is the PlatformDataType being used to construct the Struct. If “type” is a Primitive, the “precision” attribute specifies a measure of the detail in which a quantity is captured." enabled="true" id="93" name="PSMEM">${type:CrossReference(PlatformDataType.type)} ${rolename} -&gt; ${realizes:CrossReference(PlatformStructMember.realizes)} ;
+${cursor}
+ </template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformULong" deleted="false" description="A ULong is an integer data type that represents integer values in the range 0 to (2^32 – 1). " enabled="true" id="52" name="ULONG">ulong ${name} "${description}" -&gt;  ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor} 
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformULongLong" deleted="false" description="A ULongLong is an integer data type that represents integer values in the range 0 to (2^64 – 1)." enabled="true" id="51" name="ULLONG">ullong ${name} "${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+</template><template autoinsert="true" context="com.epistimis.uddl.Uddl.PlatformUShort" deleted="false" description="A UShort is an integer data type that represents integer values in the range 0 to (2^16 – 1)." enabled="true" id="53" name="USHORT">ushort ${name}	"${description}" -&gt; ${realizes:CrossReference(PlatformDataType.realizes)} ;
+${cursor}
+ </template></templates>

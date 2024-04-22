@@ -1,0 +1,22 @@
+/**
+ * UDDL Platform level - Epistimis extensions outside of the UDDL spec
+ */
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+--import 'http://www.epistimis.com/uddl/Uddl'
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/platformExtensions.ocl'
+
+package uddl
+		
+	context PlatformEntity
+	
+		/**
+		 * PlatformEntities cannot specialize a PlatformAssociation. Any specialization of
+		 * a PlatformAssociation must be a PlatformAssociation. Why? Because it's still a
+		 * PlatformAssociation even if the specialization does not add participants
+		 */
+		inv specializesOnlyPlatformEntity:
+			self.specializes <> null implies not self.specializes.oclIsKindOf(PlatformAssociation)
+	
+endpackage

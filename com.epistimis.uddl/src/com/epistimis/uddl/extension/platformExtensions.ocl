@@ -1,0 +1,248 @@
+/**
+ * UDDL Platform level - Epistimis extensions outside of the UDDL spec
+ */
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+--import 'http://www.epistimis.com/uddl/Uddl'
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptualExtensions.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/logicalExtensions.ocl'
+
+package uddl
+
+	context PlatformComposableElement
+	
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+	    def: referencedModelTypes(): Set(ConceptualComposableElement) =
+	 		if (self.oclIsKindOf(LogicalMeasurement)) then
+				self.oclAsType(PlatformDataType).referencedModelTypes()
+			else
+				self.oclAsType(PlatformEntity).referencedModelTypes()
+			endif
+	    	
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(o:ConceptualObservable): Boolean = 
+			self.referencedModelTypes()->includes(o)
+	
+	
+	context PlatformDataType
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+	    def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			self.realizes.oclAsType(LogicalComposableElement).referencedModelTypes()
+			
+			
+	context PlatformEntity
+	
+		/**
+		 * Because we can have duplicate leaf names even when the FQNs are distinct
+		 * we return the full set. The caller will need to filter these in more
+		 * detail. Note further: We do not have a generic QualifiedNameProvider
+		 * defined in OCL because that duplicates what we have in Java. So we don't
+		 * parse QNs here.
+		 */
+		static def: findByName(n: String): Set(PlatformEntity) =
+			PlatformEntity.allInstances()->select(o|o.name = n)->asSet()
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			let myComps = self.composition->collect(type.referencedModelTypes())->flatten()->asSet() in
+			let parentTypes = if (self.specializes.oclIsUndefined()) then  Bag {} 
+			else if self.specializes.oclIsKindOf(ConceptualAssociation) then
+				self.specializes.oclAsType(PlatformAssociation).referencedModelTypes() 
+				else self.specializes.referencedModelTypes() 
+				endif
+			endif in
+			myComps->union(parentTypes)->asSet()
+				
+		/**
+		 * oclIsKindOf uses the metamodel. We want to follow the UDDL
+		 * specialization hierarchy
+		 */		
+		def: isTypeOrSpecializationOf(t: PlatformEntity): Boolean =
+			self = t or if (self.specializes->notEmpty()) then self.specializes.isTypeOrSpecializationOf(t) else false endif
+ 
+		/**
+		 * Get all the Entities that specialize the root
+		 */
+		static def: specializationHierarchy(root: PlatformEntity): Set(PlatformEntity) =
+			PlatformEntity.allInstances()->select(isTypeOrSpecializationOf(root))
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used.
+		 * NOTE: This approach ensures we only look at what is actually used at this level, even if
+		 * more is defined in the Logical or Conceptual Entity
+		 */
+		 def: roleUsesType(role: String, checkType: ConceptualComposableElement): Boolean =
+		 	let comps =  self.composition->collect(realizes.realizes)->select(rolename.equalsIgnoreCase(role)) in
+		 	let usesType = comps->select(referencesModelType(checkType)) in
+		 	not usesType->isEmpty()
+	
+		/**
+		 * Is this Entity of the specified type?
+		 */
+		def: isTypeOf(type:String): Boolean = 
+			let type = uddl::PlatformEntity::findByName(type) in
+			type->exists(o|self.isTypeOrSpecializationOf(o))	
+
+		/**
+		 * Retrieve the entire type hierarchy rooted in the Entity with the specified name.
+		 * NOTE: This is a leaf name - it is not a FQN 
+		 */
+		static def: typeHierarchyRoot(type: String): PlatformEntity =
+			let roots = uddl::PlatformEntity::findByName(type)->asSequence() in
+			if (roots->size() = 1) then
+				roots->first()
+			else
+				null -- error either because we got zero or we got too many
+			endif
+
+		/**
+		 * We should have exactly 1 ConceptualEntity that uses this leaf name. That 
+		 * avoids confusion.
+		 */
+		def: exactlyOneRoot(type:String): Boolean =
+			findByName(type)->size() = 1 
+
+		/**
+		 *  Does this entity contain data anywhere from the specified type?
+		 */
+		def: containsDataFromType(type: String): Boolean =
+			let root = typeHierarchyRoot(type) in
+			let typeHier = 	specializationHierarchy(root) in
+			not self.referencedModelTypes()->intersection(typeHier)->isEmpty()
+	
+		/**
+		 * TODO: This should really use a QNP, which we don't have in OCL.
+		 */
+		def: hasBasisInAncestry(basisName: String): Boolean =
+			self.realizes.realizes.hasBasisInAncestry(basisName)
+
+	
+	context PlatformAssociation
+	
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			let compTypes = self.oclAsType(PlatformEntity).referencedModelTypes() in
+			-- This call will also handle the specialization 
+			let assocTypes = self.participant->collect(type.referencedModelTypes())->flatten()->asSet() in
+			compTypes->union(assocTypes)
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding an element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 * NOTE: This approach ensures we only look at what is actually used at this level, even if
+		 * more is defined in the Logical or Conceptual Entity
+		 */
+		def: roleUsesType(role: String, checkType: ConceptualComposableElement): Boolean =
+		 	let comps =  self.composition->collect(realizes.realizes)->select(rolename.equalsIgnoreCase(role)) in
+		 	let parts =  self.participant->collect(realizes.realizes)->select(rolename.equalsIgnoreCase(role)) in
+		 	let compUsesType = comps->select(referencesModelType(checkType)) in
+		 	let partUsesType = parts->select(referencesModelType(checkType)) in
+		 	not compUsesType->isEmpty() or partUsesType->isEmpty()
+	
+	
+	context PlatformView
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			if (self.oclIsTypeOf(PlatformQuery)) then
+				self.oclAsType(PlatformQuery).referencedModelTypes()
+			else 
+				self.oclAsType(PlatformCompositeQuery).referencedModelTypes()
+			endif
+	
+	context PlatformQuery
+		/**
+		 * Return a set of all the model types referenced by this element
+		 * TODO: This requires a Java call - which isn't yet available.
+		 * In the mean time, some simple string parsing might work in limited cases
+		 * This only works on a single entity name - need to split it to get more
+		 * Also does not work with aliases
+		 * 
+		 * See https://www.eclipse.org/forums/index.php/t/1113409/
+		 */
+	   def: referencedEntities(): Set(PlatformEntity) =
+			let lspec = self.specification.toLowerCase() in
+			let fromNdx = lspec.indexOf(' from ') in
+			let whereNdx = lspec.indexOf(' where ') in
+			let joinNdx = lspec.indexOf(' join ') in
+			let asNdx = lspec.indexOf(' as ') in
+			let endNdx = if (asNdx > fromNdx) then
+							asNdx
+						 else if ( joinNdx > fromNdx) then 
+								joinNdx 
+						 	else if (whereNdx > fromNdx) then 
+						 			whereNdx 
+						 		else -- 
+						 			self.specification.size() 
+						 		endif
+						 	endif
+						 endif in
+			let name = self.specification.substring(fromNdx+6,endNdx).trim() in
+			PlatformEntity::findByName(name)->asSet() 
+	
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			self.referencedEntities()->collect(referencedModelTypes())->flatten()->asSet()
+	
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: ConceptualComposableElement): Boolean = 
+			self.referencedModelTypes()->includes(rmt)
+
+		/**
+		 * Return a set of all the rolenames actually used by this element
+		 * TODO: This requires a Java call - which isn't yet available.
+		 * In the mean time, some simple string parsing might work in limited cases
+		 * This only works on unqualified roles (no entity name prefix) -
+		 * further work needed to support more cases.
+		 * 
+		 * See https://www.eclipse.org/forums/index.php/t/1113409/
+		 */
+		def: usedRoles(): Set(String) =
+			let lspec = self.specification.toLowerCase() in
+			let sndx = lspec.indexOf('select ') in
+			let fromNdx = lspec.indexOf(' from ') in
+			let asNdx = lspec.indexOf(' as ') in
+			let endNdx = if (asNdx < fromNdx) then
+							asNdx
+				 		else -- 
+				 			fromNdx 
+				 		endif in
+			 let roleString = self.specification.substring(sndx+7,endNdx).trim() in
+			 roleString.tokenize(' ,')->collect(trim())->asSet()
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 */
+		 def: roleUsesType(role: String, checkType: ConceptualComposableElement): Boolean =
+		 	let comps =  self.usedRoles()->select(equalsIgnoreCase(role)) in
+		 	let usesType = comps->select(referencesModelType(checkType)) in
+		 	not usesType->isEmpty()
+	
+	context PlatformCompositeQuery
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			self.composition->collect(type.referencedModelTypes())->flatten()->asSet()
+
+endpackage

@@ -1,0 +1,62 @@
+/**
+ * UDDL Logical level - Epistimis extensions outside of the UDDL spec
+ */
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+--import 'http://www.epistimis.com/uddl/Uddl'
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/helpers.ocl'
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptual.ocl'
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/conceptualExtensions.ocl'
+
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/logicalExtensions.ocl'
+
+
+/**
+ * This contains more general capability for the EXTENSIONS at the logical level
+ */
+
+package uddl 
+
+	context LogicalEntity
+	
+		/**
+		 * LogicalEntities cannot specialize a LogicalAssociation. Any specialization of
+		 * a LogicalAssociation must be a LogicalAssociation. Why? Because it's still a
+		 * LogicalAssociation even if the specialization does not add participants
+		 */
+		inv specializesOnlyLogicalEntity:
+			self.specializes <> null implies not self.specializes.oclIsKindOf(LogicalAssociation)
+
+	context LogicalEnumeratedBase
+	
+	    /*
+	     * An LogicalEnumeratedBase's name is not an IDL reserved word.
+	     */                        
+		inv nameIsNotReservedWord:
+	    	not UddlElement::isReservedWord(self.name)
+ 
+	context LogicalEnumerated		 
+	
+		inv enumerationLabelNameUniqueDrillDown('Enumeration labels must be unique within the entire enumeration hierarchy. '+ self.name + ' contains a duplicate. Remove duplicate(s) to continue'):
+	    	asError(self.flattenLabels()->isUnique(name))
+    
+	context LogicalValueTypeUnit
+	    /**
+	     * In logical.ocl, we check that constraint values match for enums. More generally, we should make sure that the contraint type and 
+	     * the value type are compatible (don't have to be identical). E.g., numeric ValueType should have numeric Constraint; Enum ValueType should have
+	     * Enum Constraint; String ValueType should have String Constraint
+	     */		
+	    inv appropriateConstraintForValueType:
+	      self.constraint <> null 
+	      
+	      implies
+	
+			(self.valueType.oclIsTypeOf(LogicalEnumerated) and self.constraint.oclIsTypeOf(LogicalEnumerationConstraint)) or
+			(self.valueType.oclIsTypeOf(LogicalNumeric) and (self.constraint.oclIsTypeOf(LogicalIntegerRangeConstraint) or 
+															 self.constraint.oclIsTypeOf(LogicalRealRangeConstraint)) 	) or
+			(self.valueType.oclIsTypeOf(LogicalString) and self.constraint.oclIsTypeOf(LogicalStringConstraint)) 
+		
+	
+
+ endpackage

@@ -1,0 +1,7 @@
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/uddl.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/datamodel.ocl'
+
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptual.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/logical.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/platform.ocl'
+

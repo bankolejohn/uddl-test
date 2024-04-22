@@ -1,0 +1,6 @@
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptualExtensions.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/logicalExtensions.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/platformExtensions.ocl'
+
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/library.ocl'
+

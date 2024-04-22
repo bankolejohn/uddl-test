@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: com.epistimis.uddl.ui.tests
+Bundle-ManifestVersion: 2
+Bundle-Name: com.epistimis.uddl.ui.tests
+Bundle-Vendor: Epistimis LLC
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: com.epistimis.uddl.ui.tests; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.epistimis.uddl,
+ com.epistimis.uddl.ui,
+ org.eclipse.xtext.testing,
+ org.eclipse.xtext.ui.testing,
+ org.eclipse.xtext.xbase.testing,
+ org.eclipse.xtext.xbase.ui.testing,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.workbench;resolution:=optional
+Import-Package: org.junit.jupiter.api;version="[5.1.0,6.0.0)",
+ org.junit.jupiter.api.extension;version="[5.1.0,6.0.0)"
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: com.epistimis.uddl.ui.tests;x-internal=true

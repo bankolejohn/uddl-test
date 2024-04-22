@@ -1,0 +1,5 @@
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/all-standard-req-invariants.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/all-extended-req-invariants.ocl'
+-- Optional invariants are, by definition, optional. So they don't get included automatically. 
+-- TODO: What mechanism should we have to load Optional invariants? These are from the UDDL Conformance suite
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/all-standard-opt-invariants.ocl'

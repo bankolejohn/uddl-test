@@ -1,0 +1,21 @@
+/**
+ * UDDL standard constraints - adjusted for this metamodel
+ */
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptual.ocl'
+
+package uddl
+
+  context ConceptualEntity
+    /*
+     * An Entity does not compose the same Observable more than once.
+     */
+    inv observableComposedOnce:
+      self.getAllCharacteristics()
+          ->selectByKind(ConceptualComposition)
+          ->collect(getType())
+          ->select(oclIsTypeOf(ConceptualObservable))
+          ->isUnique(obs | obs)
+
+endpackage

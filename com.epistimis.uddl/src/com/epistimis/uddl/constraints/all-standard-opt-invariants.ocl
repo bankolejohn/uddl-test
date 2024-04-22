@@ -1,0 +1,7 @@
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conditional_entityIsUnique.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conditional_observableComposedOnce.ocl'
+-- The next 3 are variations on usage of some invariants. The file names indicate which invariants are active. Don't need all 3 of them at the same time 
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/entityUniqueness.observableUniqueness.conceptual.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/entityUniqueness.conceptual.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/observableUniqueness.conceptual.ocl'
+

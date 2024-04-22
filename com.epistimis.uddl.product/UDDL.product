@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="UDDL Product" uid="com.epistimis.uddl.product" application="org.eclipse.ui.ide.workbench" version="1.0.0.qualifier" type="mixed" includeLaunchers="true" autoIncludeRequirements="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-consoleLog -clearPersistedData
+      </programArgs>
+      <vmArgs>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+   <launcher name="UDDL">
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+      <linux include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>
+      <macos include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</macos>
+      <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</windows>
+   </vm>
+
+   <plugins>
+        <plugin id="bcpg" version="0.0.0"/>
+        <plugin id="bcprov" version="0.0.0"/>
+        <plugin id="biz.aQute.bnd.util" version="0.0.0"/>
+        <plugin id="biz.aQute.bndlib" version="0.0.0"/>
+        <plugin id="ch.qos.logback.classic" version="0.0.0"/>
+        <plugin id="ch.qos.logback.core" version="0.0.0"/>
+        <plugin id="com.google.gson" version="0.0.0"/>
+        <plugin id="com.google.guava.failureaccess" version="0.0.0"/>
+        <plugin id="com.google.guava" version="0.0.0"/>
+        <plugin id="com.google.inject" version="0.0.0"/>
+        <plugin id="com.ibm.icu" version="0.0.0"/>
+        <plugin id="com.jcraft.jsch" version="0.0.0"/>
+        <plugin id="com.sun.jna.platform" version="0.0.0"/>
+        <plugin id="com.sun.jna" version="0.0.0"/>
+        <plugin id="io.github.classgraph.classgraph" version="0.0.0"/>
+        <plugin id="io.typefox.xtext2langium" version="0.0.0"/>
+        <plugin id="jakarta.annotation-api" version="1.3.5"/>
+        <plugin id="jakarta.annotation-api" version="2.1.1"/>
+        <plugin id="jakarta.inject.jakarta.inject-api" version="1.0.5"/>
+        <plugin id="jakarta.inject.jakarta.inject-api" version="2.0.1"/>
+        <plugin id="jaxen" version="0.0.0"/>
+        <plugin id="junit-platform-commons" version="0.0.0"/>
+        <plugin id="junit-platform-engine" version="0.0.0"/>
+        <plugin id="junit-platform-launcher" version="0.0.0"/>
+        <plugin id="org.antlr.runtime" version="3.2.0.v20230929-1400"/>
+        <plugin id="org.aopalliance" version="0.0.0"/>
+        <plugin id="org.apache.ant" version="0.0.0"/>
+        <plugin id="org.apache.aries.spifly.dynamic.bundle" version="0.0.0"/>
+        <plugin id="org.apache.batik.constants" version="0.0.0"/>
+        <plugin id="org.apache.batik.css" version="0.0.0"/>
+        <plugin id="org.apache.batik.i18n" version="0.0.0"/>
+        <plugin id="org.apache.batik.util" version="0.0.0"/>
+        <plugin id="org.apache.commons.cli" version="0.0.0"/>
+        <plugin id="org.apache.commons.commons-codec" version="0.0.0"/>
+        <plugin id="org.apache.commons.commons-io" version="0.0.0"/>
+        <plugin id="org.apache.commons.jxpath" version="0.0.0"/>
+        <plugin id="org.apache.commons.lang3" version="0.0.0"/>
+        <plugin id="org.apache.commons.logging" version="0.0.0"/>
+        <plugin id="org.apache.felix.gogo.command" version="0.0.0"/>
+        <plugin id="org.apache.felix.gogo.runtime" version="0.0.0"/>
+        <plugin id="org.apache.felix.gogo.shell" version="0.0.0"/>
+        <plugin id="org.apache.felix.scr" version="0.0.0"/>
+        <plugin id="org.apache.log4j" version="0.0.0"/>
+        <plugin id="org.apache.xerces" version="0.0.0"/>
+        <plugin id="org.apache.xml.resolver" version="0.0.0"/>
+        <plugin id="org.apache.xmlgraphics" version="0.0.0"/>
+        <plugin id="org.apiguardian.api" version="0.0.0"/>
+        <plugin id="org.eclipse.ant.core" version="0.0.0"/>
+        <plugin id="org.eclipse.compare.core" version="0.0.0"/>
+        <plugin id="org.eclipse.compare" version="0.0.0"/>
+        <plugin id="org.eclipse.core.commands" version="0.0.0"/>
+        <plugin id="org.eclipse.core.contenttype" version="0.0.0"/>
+        <plugin id="org.eclipse.core.databinding.observable" version="0.0.0"/>
+        <plugin id="org.eclipse.core.databinding.property" version="0.0.0"/>
+        <plugin id="org.eclipse.core.databinding" version="0.0.0"/>
+        <plugin id="org.eclipse.core.expressions" version="0.0.0"/>
+        <plugin id="org.eclipse.core.filebuffers" version="0.0.0"/>
+        <plugin id="org.eclipse.core.filesystem.macosx" version="0.0.0"/>
+        <plugin id="org.eclipse.core.filesystem" version="0.0.0"/>
+        <plugin id="org.eclipse.core.jobs" version="0.0.0"/>
+        <plugin id="org.eclipse.core.resources" version="0.0.0"/>
+        <plugin id="org.eclipse.core.runtime" version="0.0.0"/>
+        <plugin id="org.eclipse.core.variables" version="0.0.0"/>
+        <plugin id="org.eclipse.debug.core" version="0.0.0"/>
+        <plugin id="org.eclipse.debug.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.commands" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.contexts" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.di.annotations" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.di.extensions.supplier" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.di.extensions" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.di" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.core.services" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.emf.xpath" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.bindings" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.css.core" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.css.swt.theme" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.css.swt" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.di" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.dialogs" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.ide" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.model.workbench" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.services" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.widgets" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.workbench.addons.swt" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.workbench.renderers.swt.cocoa" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.workbench.renderers.swt" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.workbench.swt" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.workbench3" version="0.0.0"/>
+        <plugin id="org.eclipse.e4.ui.workbench" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.codegen.ecore" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.codegen" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.common.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.common" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.ecore.change" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.ecore.edit" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.ecore.editor" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.ecore.xmi" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.ecore" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.edit.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.edit" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.mwe.core" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.mwe.utils" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.mwe2.lib" version="0.0.0"/>
+        <plugin id="org.eclipse.emf.mwe2.runtime" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.app" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.bidi" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.common" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.event" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.frameworkadmin.equinox" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.frameworkadmin" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.artifact.repository" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.core" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.director" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.engine" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.garbagecollector" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.jarprocessor" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.metadata.repository" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.metadata" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.publisher.eclipse" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.publisher" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.repository.tools" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.repository" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.touchpoint.eclipse" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.p2.updatesite" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.preferences" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.registry" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.security.macosx" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.security" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.simpleconfigurator.manipulator" version="0.0.0"/>
+        <plugin id="org.eclipse.equinox.simpleconfigurator" version="0.0.0"/>
+        <plugin id="org.eclipse.help" version="0.0.0"/>
+        <plugin id="org.eclipse.jdt.annotation" version="2.2.800.v20231029-1039"/>
+        <plugin id="org.eclipse.jdt.core.compiler.batch" version="0.0.0"/>
+        <plugin id="org.eclipse.jdt.core.manipulation" version="0.0.0"/>
+        <plugin id="org.eclipse.jdt.core" version="0.0.0"/>
+        <plugin id="org.eclipse.jdt.debug" version="0.0.0"/>
+        <plugin id="org.eclipse.jdt.launching" version="0.0.0"/>
+        <plugin id="org.eclipse.jdt.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.jem.util" version="0.0.0"/>
+        <plugin id="org.eclipse.jetty.servlet-api" version="0.0.0"/>
+        <plugin id="org.eclipse.jface.databinding" version="0.0.0"/>
+        <plugin id="org.eclipse.jface.text" version="0.0.0"/>
+        <plugin id="org.eclipse.jface" version="0.0.0"/>
+        <plugin id="org.eclipse.lsp4j.jsonrpc" version="0.0.0"/>
+        <plugin id="org.eclipse.lsp4j" version="0.0.0"/>
+        <plugin id="org.eclipse.ltk.core.refactoring" version="0.0.0"/>
+        <plugin id="org.eclipse.ltk.ui.refactoring" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.archetype.catalog" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.archetype.common" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.archetype.descriptor" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.archetype.maven-artifact-transfer" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.core.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.core" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.logback" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.maven.runtime" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.model.edit" version="0.0.0"/>
+        <plugin id="org.eclipse.m2e.workspace.cli" version="0.0.0"/>
+        <plugin id="org.eclipse.nebula.cwt" version="0.0.0"/>
+        <plugin id="org.eclipse.nebula.widgets.cdatetime" version="0.0.0"/>
+        <plugin id="org.eclipse.orbit.xml-apis-ext" version="0.0.0"/>
+        <plugin id="org.eclipse.osgi.compatibility.state" version="0.0.0"/>
+        <plugin id="org.eclipse.osgi.services" version="0.0.0"/>
+        <plugin id="org.eclipse.osgi.util" version="0.0.0"/>
+        <plugin id="org.eclipse.osgi" version="0.0.0"/>
+        <plugin id="org.eclipse.pde.build" version="0.0.0"/>
+        <plugin id="org.eclipse.pde.core" version="0.0.0"/>
+        <plugin id="org.eclipse.search.core" version="0.0.0"/>
+        <plugin id="org.eclipse.search" version="0.0.0"/>
+        <plugin id="org.eclipse.swt.cocoa.macosx.aarch64" version="0.0.0"/>
+        <plugin id="org.eclipse.swt" version="0.0.0"/>
+        <plugin id="org.eclipse.team.core" version="0.0.0"/>
+        <plugin id="org.eclipse.team.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.text" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.cocoa" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.console" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.editors" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.forms" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.ide" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.navigator.resources" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.navigator" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.views.properties.tabbed" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.views" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.workbench.texteditor" version="0.0.0"/>
+        <plugin id="org.eclipse.ui.workbench" version="0.0.0"/>
+        <plugin id="org.eclipse.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.urischeme" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.core" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.emf" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.emfworkbench.integration" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.environment" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.frameworks" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.project.facet.core" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.common.uriresolver" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.sse.core" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.validation" version="0.0.0"/>
+        <plugin id="org.eclipse.wst.xml.core" version="0.0.0"/>
+        <plugin id="org.eclipse.xtend.lib.macro" version="0.0.0"/>
+        <plugin id="org.eclipse.xtend.lib" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.builder" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.common.types.edit" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.common.types.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.common.types" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ecore" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ide" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.logging" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.smap" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ui.codetemplates.ide" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ui.codetemplates.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ui.codetemplates" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ui.shared" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.ui" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.util" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.xbase.ide" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.xbase.lib" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.xbase" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext.xtext.generator" version="0.0.0"/>
+        <plugin id="org.eclipse.xtext" version="0.0.0"/>
+        <plugin id="org.hamcrest.core" version="0.0.0"/>
+        <plugin id="org.hamcrest" version="0.0.0"/>
+        <plugin id="org.jdom2" version="0.0.0"/>
+        <plugin id="org.junit" version="0.0.0"/>
+        <plugin id="org.objectweb.asm.commons" version="0.0.0"/>
+        <plugin id="org.objectweb.asm.tree.analysis" version="0.0.0"/>
+        <plugin id="org.objectweb.asm.tree" version="0.0.0"/>
+        <plugin id="org.objectweb.asm.util" version="0.0.0"/>
+        <plugin id="org.objectweb.asm" version="0.0.0"/>
+        <plugin id="org.opentest4j" version="0.0.0"/>
+        <plugin id="org.osgi.service.cm" version="0.0.0"/>
+        <plugin id="org.osgi.service.component" version="0.0.0"/>
+        <plugin id="org.osgi.service.device" version="0.0.0"/>
+        <plugin id="org.osgi.service.event" version="0.0.0"/>
+        <plugin id="org.osgi.service.metatype" version="0.0.0"/>
+        <plugin id="org.osgi.service.prefs" version="0.0.0"/>
+        <plugin id="org.osgi.service.provisioning" version="0.0.0"/>
+        <plugin id="org.osgi.service.repository" version="0.0.0"/>
+        <plugin id="org.osgi.service.upnp" version="0.0.0"/>
+        <plugin id="org.osgi.service.useradmin" version="0.0.0"/>
+        <plugin id="org.osgi.service.wireadmin" version="0.0.0"/>
+        <plugin id="org.osgi.util.function" version="0.0.0"/>
+        <plugin id="org.osgi.util.measurement" version="0.0.0"/>
+        <plugin id="org.osgi.util.position" version="0.0.0"/>
+        <plugin id="org.osgi.util.promise" version="0.0.0"/>
+        <plugin id="org.osgi.util.xml" version="0.0.0"/>
+        <plugin id="org.sat4j.core" version="0.0.0"/>
+        <plugin id="org.sat4j.pb" version="0.0.0"/>
+        <plugin id="org.tukaani.xz" version="0.0.0"/>
+        <plugin id="slf4j.api" version="0.0.0"/>
+   </plugins>
+
+   <features>
+      <feature id="com.epistimis.uddl.feature" installMode="root"/>
+      <feature id="com.epistimis.uddl.query.feature"/>
+      <feature id="org.eclipse.platform"/>
+      <feature id="org.eclipse.help"/>
+      <feature id="org.eclipse.equinox.p2.core.feature"/>
+      <feature id="org.eclipse.equinox.p2.extras.feature"/>
+      <feature id="org.eclipse.equinox.p2.user.ui"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature"/>
+   </features>
+
+   <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
+
+</product>

@@ -1,0 +1,34 @@
+/**
+ * UDDL standard constraints - adjusted for this metamodel
+ */
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/helpers.ocl'
+
+package  uddl
+       
+  context DataModel
+    /*
+     * Every UddlElement in an DataModel has a unique name.
+     * 
+	 * Note: This is equivalent constraint to hasUniqueName. 
+	 *		Original constraint modified to work with Kepler
+	 */
+    inv childModelsHaveUniqueNames:
+      let children : Bag(UddlElement)=
+        self.cdm.oclAsType(UddlElement)->union(
+        self.pdm.oclAsType(UddlElement)->union(
+        self.ldm.oclAsType(UddlElement))) in
+        
+      children->isUnique(name.toLowerCase())
+	  
+    /*
+     * A DataModel's name is not an IDL reserved word.
+	 *   CR 242
+     */                        
+    inv nameIsNotReservedWord:
+      not UddlElement::isReservedWord(self.name)
+
+	  
+
+endpackage

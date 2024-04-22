@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="com.epistimis.uddl.feature"
+	label="Uddl Feature "
+      version="1.0.0.qualifier"
+      provider-name="Epistimis LLC">
+   <description>
+      Support for Universal Data Definition Language data models (Conceptual,
+Logical and Platform)
+
+Includes support for UDDL Queries
+   </description>
+
+   <includes
+         id="com.epistimis.uddl.query.feature"
+         version="0.0.0"
+         name="UDDL Query Language"
+         search-location="both"/>
+
+
+	<plugin
+			id="com.epistimis.uddl"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+
+	<plugin
+			id="com.epistimis.uddl.ide"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+
+	<plugin
+			id="com.epistimis.uddl.ui"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+
+  <plugin
+         id="org.apache.log4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+</feature>

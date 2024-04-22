@@ -1,0 +1,446 @@
+/**
+ * UDDL Logical level - Epistimis extensions outside of the UDDL spec
+ */
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+--import uddl : 'http://www.epistimis.com/uddl/Uddl'
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/helpers.ocl'
+--include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptual.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/conceptualExtensions.ocl'
+
+/**
+ * This contains more general capability for the EXTENSIONS at the logical level
+ */
+
+package uddl 
+
+  context UddlElement
+  
+   /**
+	 * Declare a helper operation to map an ok/warning verdict to ok/error.
+	 */
+	def: asError(verdict : Boolean) : Boolean = if verdict then true else null endif
+
+ 
+   context Taxonomy
+ 	     /*
+	     * Helper method that reroutes based on derived type
+	     * 
+	     */      
+	    def: flattenLabels(): Collection(LogicalEnumeratedBase) =
+		     if self.oclIsTypeOf(LogicalEnumeratedSet) then
+		        self.oclAsType(LogicalEnumeratedSet).flattenLabels()
+		     else -- 
+		        self.oclAsType(LogicalEnumerationLabel).flattenLabels()
+		     endif 
+   
+    			
+   		/**
+		 * All Taxonomy classes can check containment using this method
+		 * This determines if obj is contained in self's set labels (which includes self)
+		 */
+		def: contains(obj: Taxonomy): Boolean = 
+			self.flattenLabels()->includes(obj)
+
+ 		def: contains(s: String): Boolean = 
+			self.flattenLabels()->exists(l|l.name.toLowerCase() = s.toLowerCase())
+   
+ 		/**
+		 * The two sets intersect but neither is completely contained in the other
+		 */
+		static def: overlapsOnly(first: Set(Taxonomy), second: Set(Taxonomy)): Boolean =
+			let diff = first->symmetricDifference(second) in
+			first->intersection(second)->notEmpty() and
+			first->intersection(diff)->notEmpty() and
+			second->intersection(diff)->notEmpty()
+   
+   context LogicalEnumeratedBase
+ 	   /**
+		 * Declare a helper operation to map an ok/warning verdict to ok/error.
+		 */
+		def: asError(verdict : Boolean) : Boolean = if verdict then true else null endif
+ 	
+		 /**
+		  * Find the root
+		  */
+		 def: root(): LogicalEnumerated =
+	    	let container = self.oclContainer.oclAsType(LogicalEnumeratedBase) in
+	    	container.root()
+	    	
+ 
+	     /*
+	     * Helper method that reroutes based on derived type
+	     */      
+	    def: flattenLabels(): Collection(LogicalEnumeratedBase) =
+		     if self.oclIsTypeOf(LogicalEnumeratedSet) then
+		        self.oclAsType(LogicalEnumeratedSet).flattenLabels()
+		     else -- 
+		        self.oclAsType(LogicalEnumerationLabel).flattenLabels()
+		     endif 
+	         	
+		/**
+		 * All LogicalEnumeratedBase classes can check containment using this method
+		 * This determines if obj is contained in self's set labels (which includes self)
+		 */
+		def: contains(obj: LogicalEnumeratedBase): Boolean = 
+			self.flattenLabels()->includes(obj)
+
+ 		def: contains(s: String): Boolean = 
+			self.flattenLabels()->exists(l|l.name.toLowerCase() = s.toLowerCase())
+
+		/**
+		 * Is self contained in the passed in set (including any subelements)
+		 */
+		def: containedIn(s: Set(LogicalEnumeratedBase)): Boolean =
+			s->collect(flattenLabels())->includes(self)
+		/**
+		 * Is self contained in the hierarchy of the passed in element?
+		 */
+		def: containedIn(s: LogicalEnumeratedBase): Boolean =
+			s.flattenLabels()->includes(self)
+
+
+		def: containedIn(s: String): Boolean =
+			findSetRootedInName(s)->includes(self)
+
+		def: containedIn(s: Set(String)): Boolean =
+			s->collect(o|findSetRootedInName(o))->includes(self)
+
+
+		/**
+		 * Find a specific instance. Note that this looks through all of them. Use it sparingly
+		 * NOTE: static methods are invoked using '::' instead of '.'
+		 */	
+		static def: findByName(n: String): LogicalEnumeratedBase =
+			let found = LogicalEnumeratedBase.allInstances()->select(o|o.name.toLowerCase() = n.toLowerCase())->asSequence() in 
+			if (found->notEmpty()) then
+				found->first()
+			else
+				null
+			endif
+		/**
+		 * Find specific instances. Note that this looks through all of them. Use it sparingly
+		 * NOTE: static methods are invoked using '::' instead of '.'
+		 */	
+		static def: findByNames(names: Set(String)): Set(LogicalEnumeratedBase) =
+			let lnames = names->collect(toLowerCase()) in
+			LogicalEnumeratedBase.allInstances()->select(o|lnames->includes(o.name.toLowerCase())) 
+
+
+  		/**
+		 * Find the set of instances rooted at this instance. Use this version if you
+		 * know self is not null
+		 */	
+ 		def: findSetRootedIn(): Set(LogicalEnumeratedBase) =
+				self->collect(flattenLabels())->asSet()
+
+   		/**
+		 * Find the set of instances rooted at this instance. Use this version if you
+		 * aren't sure if root is null or not
+		 */	
+ 		static def: findSetRootedIn(root: LogicalEnumeratedBase): Set(LogicalEnumeratedBase) =
+			if (root->notEmpty()) then
+				root->collect(flattenLabels())->asSet()
+			else
+				Set{}
+			endif
+ 
+ 		/**
+		 * Find the set of instances rooted at this name. Note that this looks through all of them. Use it sparingly
+		 * NOTE: static methods are invoked using '::' instead of '.'
+		 */	
+		static def: findSetRootedInName(n: String): Set(LogicalEnumeratedBase) =
+			let root = findByName(n) in
+				findSetRootedIn(root)
+
+
+ 		/**
+		 * Find the set of instances rooted at this set of names. Note that this looks through all of them. Use it sparingly
+		 * NOTE: static methods are invoked using '::' instead of '.'
+		 */	
+		static def: findSetRootedInNames(names: Set(String)): Set(LogicalEnumeratedBase) =
+			findByNames(names)->collect(flattenLabels())->asSet()
+
+	 
+  context LogicalEnumerated
+ 
+ 		 /**
+		  * Find the root
+		  */
+		 def: root(): LogicalEnumerated =
+			self
+  
+	    /*
+	     * Helper method - flattens the hierarchy. Can't just use 'flatten' because it expects a collection only , not objects that include collections
+	     * as members.
+		 *
+		 *	NOTE: Should this include 'self' at this level because the enum name is not itself a label? This is different than a LogicalEnumeratedSet, where the 
+		 *	name of the set is included. Including it (which we do here) does insure that there is no duplication, which would be confusing
+		 * 
+		 */
+	   	 def: flattenLabels(): Collection(LogicalEnumeratedBase) =
+	   	    self.label->closure(e: LogicalEnumeratedBase | if e.oclIsTypeOf(LogicalEnumeratedSet) then e.oclAsType(LogicalEnumeratedSet).label else Bag{e} endif)
+	   	    	->including(self.oclAsType(LogicalEnumeratedBase))
+	   	    	-- While not absolutely required, sorting this makes it easier to identify duplicates
+	   	    	-- ->sortedBy(e|e.name)
+	   
+	
+		-- If there are duplicates, can use this function to order them - then print out their names
+		 def: sortedContents(): Collection(LogicalEnumeratedBase) =
+		 	self.label->closure(e: LogicalEnumeratedBase | if e.oclIsTypeOf(LogicalEnumeratedSet) then e.oclAsType(LogicalEnumeratedSet).label else Bag{e} endif)->sortedBy(e|e.name)
+		     
+      
+  	context LogicalEnumeratedSet
+	  /**
+	   * Helper method that flattens set contents
+	   */  
+	   	 def: flattenLabels(): Collection(LogicalEnumeratedBase) =
+	  	    self.label->closure(e: LogicalEnumeratedBase | if e.oclIsTypeOf(LogicalEnumeratedSet) then e.oclAsType(LogicalEnumeratedSet).label else Bag{e} endif)->including(self.oclAsType(LogicalEnumeratedBase))
+	
+		    	 	
+  	context LogicalEnumerationLabel
+	    /*
+	     * Helper method - end of recursion 
+	     */    	 
+	   	def: flattenLabels(): Bag(LogicalEnumeratedBase) =
+	   		Bag{self.oclAsType(LogicalEnumeratedBase)}
+  
+  
+ 	context LogicalComposableElement
+
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+	    def: referencedModelTypes(): Set(ConceptualComposableElement) =
+	 		if (self.oclIsKindOf(LogicalMeasurement)) then
+				self.oclAsType(LogicalMeasurement).referencedModelTypes()
+			else
+				self.oclAsType(LogicalEntity).referencedModelTypes()
+			endif
+	    	
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(o:ConceptualObservable): Boolean = 
+			self.referencedModelTypes()->includes(o)
+
+
+	context LogicalMeasurement
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+	    def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			self.realizes.referencedModelTypes()
+			
+			
+	context LogicalEntity
+	
+		/**
+		 * Because we can have duplicate leaf names even when the FQNs are distinct
+		 * we return the full set. The caller will need to filter these in more
+		 * detail. Note further: We do not have a generic QualifiedNameProvider
+		 * defined in OCL because that duplicates what we have in Java. So we don't
+		 * parse QNs here.
+		 */
+		static def: findByName(n: String): Set(LogicalEntity) =
+			LogicalEntity.allInstances()->select(o|o.name = n)->asSet()
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			let myComps = self.composition->collect(type.referencedModelTypes())->flatten()->asSet() in
+			let parentTypes = if (self.specializes.oclIsUndefined()) then  Bag {} 
+			else if self.specializes.oclIsKindOf(ConceptualAssociation) then
+				self.specializes.oclAsType(LogicalAssociation).referencedModelTypes() 
+				else self.specializes.referencedModelTypes() 
+				endif
+			endif in
+			myComps->union(parentTypes)->asSet()
+	
+		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+			self.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) 
+				
+		/**
+		 * oclIsKindOf uses the metamodel. We want to follow the UDDL
+		 * specialization hierarchy
+		 */		
+		def: isTypeOrSpecializationOf(t: LogicalEntity): Boolean =
+			self = t or if (self.specializes->notEmpty()) then self.specializes.isTypeOrSpecializationOf(t) else false endif
+ 	
+		/**
+		 * Get all the Entities that specialize the root
+		 */
+		static def: specializationHierarchy(root: LogicalEntity): Set(LogicalEntity) =
+			LogicalEntity.allInstances()->select(isTypeOrSpecializationOf(root))
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 * NOTE: This approach ensures we only look at what is actually used at this level, even if
+		 * more is defined in the  Conceptual Entity
+		 */
+		 def: roleUsesType(role: String, checkType: ConceptualComposableElement): Boolean =
+		 	let comps =  self.composition->collect(realizes)->select(rolename.equalsIgnoreCase(role)) in
+		 	let usesType = comps->select(referencesModelType(checkType)) in
+		 	not usesType->isEmpty()
+
+		/**
+		 * Is this Entity of the specified type?
+		 */
+		def: isTypeOf(type:String): Boolean = 
+			let type = uddl::LogicalEntity::findByName(type) in
+			type->exists(o|self.isTypeOrSpecializationOf(o))	
+
+		/**
+		 * Retrieve the entire type hierarchy rooted in the Entity with the specified name.
+		 * NOTE: This is a leaf name - it is not a FQN 
+		 */
+		static def: typeHierarchyRoot(type: String): LogicalEntity =
+			let roots = uddl::LogicalEntity::findByName(type)->asSequence() in
+			if (roots->size() = 1) then
+				roots->first()
+			else
+				null -- error either because we got zero or we got too many
+			endif
+
+		/**
+		 * We should have exactly 1 ConceptualEntity that uses this leaf name. That 
+		 * avoids confusion.
+		 */
+		def: exactlyOneRoot(type:String): Boolean =
+			findByName(type)->size() = 1 
+
+		/**
+		 *  Does this entity contain data anywhere from the specified type?
+		 */
+		def: containsDataFromType(type: String): Boolean =
+			let root = typeHierarchyRoot(type) in
+			let typeHier = 	specializationHierarchy(root) in
+			not self.referencedModelTypes()->intersection(typeHier)->isEmpty()
+
+		/**
+		 * TODO: This should really use a QNP, which we don't have in OCL.
+		 */
+		def: hasBasisInAncestry(basisName: String): Boolean =
+			self.realizes.hasBasisInAncestry(basisName)
+
+	context LogicalAssociation
+	
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			let compTypes = self.oclAsType(LogicalEntity).referencedModelTypes() in
+			-- This call will also handle the specialization 
+			let assocTypes = self.participant->collect(type.referencedModelTypes())->flatten()->asSet() in
+			compTypes->union(assocTypes)
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding an element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 * NOTE: This approach ensures we only look at what is actually used at this level, even if
+		 * more is defined in the Conceptual Entity
+		 */
+		 def: roleUsesType(role: String, checkType: ConceptualComposableElement): Boolean =
+		 	let comps =  self.composition->collect(realizes)->select(rolename.equalsIgnoreCase(role)) in
+		 	let parts =  self.participant->collect(realizes)->select(rolename.equalsIgnoreCase(role)) in
+		 	let compUsesType = comps->select(referencesModelType(checkType)) in
+		 	let partUsesType = parts->select(referencesModelType(checkType)) in
+		 	not compUsesType->isEmpty() or partUsesType->isEmpty()
+	
+	 context LogicalView
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			if (self.oclIsTypeOf(LogicalQuery)) then
+				self.oclAsType(LogicalQuery).referencedModelTypes()
+			else 
+				self.oclAsType(LogicalCompositeQuery).referencedModelTypes()
+			endif
+	
+	context LogicalQuery
+		/**
+		 * Return a set of all the model types referenced by this element
+		 * TODO: This requires a Java call - which isn't yet available.
+		 * In the mean time, some simple string parsing might work in limited cases
+		 * This only works on a single entity name - need to split it to get more
+		 * Also does not work with aliases
+		 * 
+		 * See https://www.eclipse.org/forums/index.php/t/1113409/
+		 */
+	   def: referencedEntities(): Set(LogicalEntity) =
+			let lspec = self.specification.toLowerCase() in
+			let fromNdx = lspec.indexOf(' from ') in
+			let whereNdx = lspec.indexOf(' where ') in
+			let joinNdx = lspec.indexOf(' join ') in
+			let asNdx = lspec.indexOf(' as ') in
+			let endNdx = if (asNdx > fromNdx) then
+							asNdx
+						 else if ( joinNdx > fromNdx) then 
+								joinNdx 
+						 	else if (whereNdx > fromNdx) then 
+						 			whereNdx 
+						 		else -- 
+						 			self.specification.size() 
+						 		endif
+						 	endif
+						 endif in
+			let name = self.specification.substring(fromNdx+6,endNdx).trim() in
+			LogicalEntity::findByName(name)->asSet()
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			self.referencedEntities()->collect(referencedModelTypes())->flatten()->asSet()
+	
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: ConceptualComposableElement): Boolean = 
+			self.referencedModelTypes()->includes(rmt)
+
+		/**
+		 * Return a set of all the rolenames actually used by this element
+		 * TODO: This requires a Java call - which isn't yet available.
+		 * In the mean time, some simple string parsing might work in limited cases
+		 * This only works on unqualified roles (no entity name prefix) -
+		 * further work needed to support more cases.
+		 * 
+		 * See https://www.eclipse.org/forums/index.php/t/1113409/
+		 */
+		def: usedRoles(): Set(String) =
+			let lspec = self.specification.toLowerCase() in
+			let sndx = lspec.indexOf('select ') in
+			let fromNdx = lspec.indexOf(' from ') in
+			let asNdx = lspec.indexOf(' as ') in
+			let endNdx = if (asNdx < fromNdx) then
+							asNdx
+				 		else -- 
+				 			fromNdx 
+				 		endif in
+			 let roleString = self.specification.substring(sndx+7,endNdx).trim() in
+			 roleString.tokenize(' ,')->collect(trim())->asSet()
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 */
+		 def: roleUsesType(role: String, checkType: ConceptualComposableElement): Boolean =
+		 	let comps =  self.usedRoles()->select(equalsIgnoreCase(role)) in
+		 	let usesType = comps->select(referencesModelType(checkType)) in
+		 	not usesType->isEmpty()
+
+	
+	context LogicalCompositeQuery
+		/**
+		 * Return a set of all the model types referenced by this element
+		 */
+		def: referencedModelTypes(): Set(ConceptualComposableElement) =
+			self.composition->collect(type.referencedModelTypes())->flatten()->asSet()
+  
+ endpackage

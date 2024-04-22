@@ -1,0 +1,136 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Willink Transformations and others.
+ * All rights reserved.   This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v20.html
+ *
+ * Contributors:
+ *   E.D.Willink - Initial API and implementation
+ *
+ * This file provides additional validation constraints for use of OCL embedded in Ecore.
+ *******************************************************************************/
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+import 'http://www.eclipse.org/2008/Xtext#/'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/extension/library.ocl'
+
+/**
+ * ecore section taken from CompleteOCLTutorial - ExtraEcoreValidation
+ */
+package ecore
+
+	/**
+	 * Extra validation for EReference and EAttribute.
+	 */
+	context EStructuralFeature
+				
+		/**
+		 * If a feature has an OCL derivation, it should be transient; otherwise it is not executed.
+		 */
+		inv DerivationIsTransient: hasDerivation implies transient
+		
+		/**
+		 * If a feature has an OCL derivation, it must be volatile; otherwise the cached value suppresses execution.
+		 */
+		inv DerivationIsVolatile: asError(hasDerivation implies volatile)
+		
+		/**
+		 * If a feature has an OCL derivation, it should not also have a default value.
+		 */
+		inv DerivationIsUninitialized: hasDerivation implies defaultValue.oclIsUndefined()
+	
+	/**
+	 * Extra validation for just EReference.
+	 */
+	context EReference
+	
+		/**
+		 * If a feature has an OCL derivation, it should not compete with built-in containment.
+		 */
+		inv DerivationIsNotComposed: asError(hasDerivation implies not containment)
+		
+		/**
+		 * If a feature has an OCL derivation, it should be not waste time resolving proxies.
+		 */
+		inv DerivationDoesNotResolveProxies: hasDerivation implies not resolveProxies
+		
+		/**
+		 * If a feature has an OCL derivation and an opposite, the opposite should also have an OCL derivation
+		 */
+		inv DerivationWithOppositeHasOppositeDerivation: hasDerivation and eOpposite <> null implies eOpposite.hasDerivation
+
+endpackage
+
+
+/**
+ * XText section from CompleteOCLTutotiral - ExtraXTextValidation
+  */
+package xtext
+
+	context ReferencedMetamodel
+		inv NoAnonymousImports: alias <> null
+	
+	context Action
+		inv NoActions : false
+	
+	context ParserRule
+		inv CamelCaseName : name <> null implies name.matches('[A-Z][A-Za-z]*')
+	
+	context xtext::TerminalRule
+		inv UpperName : name <> null implies name = name.toUpperCase()
+ 
+endpackage
+
+package ocl
+
+
+
+--context Collection::max():T
+--	pre: self−>notEmpty()
+--	post: result = self−>any(e | self−>forAll(e2 | e >= e2))
+
+--context Collection::countDistinct(): Integer 
+--	post: result = self−>asSet()−>size()
+
+
+--context Collection::avg():Real
+--	pre: self->notEmpty()
+--	post: result = self−>sum() / self−>size()
+
+
+--context OrderedSet::covariance(Y: OrderedSet):Real 
+--  pre: self−>size() = Y−>size() and self−>notEmpty() 
+--  post:
+--	let avgY:Real = Y−>avg() in
+--	let avgSelf:Real = self−>avg() in
+--		result = (1/self−>size()) *
+--		self−>iterate(e; acc:Real=0 | acc +
+--		((e - avgSelf) * (Y−>at(self−>indexOf(e)) - avgY))
+
+--context Collection::mode(): T
+--	pre: self−>notEmpty()
+--	post: result = self−>any(e | self−>forAll(e2 | self−>count(e) >= self−>count(e2)))
+	
+--context Collection::rankDescending(e: T): Integer 
+--	pre: self−>includes(e)
+--	post: result = self−>size() - self−>select(e2 | e>=e2) −>size() + 1	
+
+--context Collection::percentile(p: Integer): T
+----pre: p >= 0 and p <= 100 and self−>notEmpty() 
+--post: 
+--	let n: Real = (self−>size()-1) * 25 / 100 + 1 in
+--	let k : Integer = n.floor() in
+--	let d : Real = n - k in
+--	let s: Sequence(Integer) = self−>sortedBy(e | e) in 
+--	if k = 0 then s−>first() * 1.0
+--	else 
+--		if k = s−>size() then s−>last() * 1.0
+--		else s−>at(k) + d * (s−>at(k+1) - s−>at(k) ) 
+--		endif 
+--	endif
+--
+--context Collection::median(): T 
+--pre: self−>notEmpty()
+--post: result = self−>percentile(50)
+
+endpackage

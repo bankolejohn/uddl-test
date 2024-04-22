@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: com.epistimis.uddl.ide
+Bundle-ManifestVersion: 2
+Bundle-Name: com.epistimis.uddl.ide
+Bundle-Vendor: Epistimis LLC
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: com.epistimis.uddl.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.epistimis.uddl,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
+ com.epistimis.uddl.query;bundle-version="1.0.0",
+ com.epistimis.uddl.query.ide;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: com.epistimis.uddl.ide.contentassist.antlr,
+ com.epistimis.uddl.ide.contentassist.antlr.internal

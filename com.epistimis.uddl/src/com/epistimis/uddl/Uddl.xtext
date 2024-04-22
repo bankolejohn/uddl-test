@@ -1,0 +1,842 @@
+grammar com.epistimis.uddl.Uddl with org.eclipse.xtext.common.Terminals //org.eclipse.xtext.xbase.annotations.XbaseWithAnnotations //org.eclipse.xtext.xbase.Xbase //org.eclipse.xtext.common.Terminals
+
+generate uddl "http://www.epistimis.com/uddl/Uddl"
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+// Starter rule comes first
+ModelFile:
+	(includes+=Include)*
+	dataModel=DataModel
+;
+
+/** A DataModel is a container for ConceptualDataModels, LogicalDataModels, and PlatformDataModels */
+DataModel:
+	'dm' name=ID (description=STRING)? '{'
+		(cdm+=ConceptualDataModel |
+		ldm+=LogicalDataModel |
+		pdm+=PlatformDataModel)*
+	'}'
+	;
+
+
+// TODO: This needs code to process the +|- when creating int or float?
+/** INT override causing ambiguity with XBase */
+//@Override
+terminal SIGNED_INT returns ecore::EInt:  ('+'|'-') INT;
+// Handling LONGs also requires recognizing numerical representations that are too large to fit in an integer
+terminal LONG returns ecore::ELong:  SIGNED_INT ("L"|"l");
+terminal FLOAT returns ecore::EFloat : ('+'|'-')? DEC '.' DEC (('E'|'e') DEC)? ;
+//DOUBLE returns ecore::EDouble : ('+'|'-')? DEC '.' DEC ('D'|'d');
+terminal BOOLEAN returns ecore::EBoolean : ('true'|'false'|'TRUE'|'FALSE');
+
+// A few generic rules
+terminal fragment DEC:  ('0'..'9')+;
+
+QN:
+    ID ('.' ID)*;
+
+/**
+ * Use 'include' because 'import' is an XBase keyword ?
+ * Probably not - examples use 'import' and doc knows of XBase
+ */
+Include:
+    'import' importedNamespace=QualifiedNameWithWildcard ';' ;
+
+/**
+ * Already defined in XBase
+ */
+QualifiedNameWithWildcard:
+    QN '.*'?;
+
+ // Metamodel concepts starts here
+ 
+ElementAttrs:
+	name=ID (description=STRING)?
+;
+ 
+/** An Element is the root type for defining all named elements in the DataModel. The “name” attribute captures the name of the Element in the model. The “description” attribute captures a description for the Element. */
+UddlElement:  // This is datamodel.Element but it's too much hassle to fix after the fact.
+	DataModel |
+	ConceptualDataModel | LogicalDataModel | PlatformDataModel|
+	ConceptualElement|
+	LogicalElement |
+	PlatformElement |
+	LogicalReferencePoint |
+	LogicalEnumeratedBase | //LogicalEnumerationLabel | 
+	LogicalConstraint
+;
+
+/** A ConceptualDataModel is a container for CDM Elements. */
+ConceptualDataModel:
+	'cdm'	name=ID (description=STRING)? '{'
+		(element+=ConceptualElement | cdm+=ConceptualDataModel)*
+	'}'
+;
+
+/** A LogicalDataModel is a container for LDM Elements. */
+LogicalDataModel:
+	'ldm'	name=ID (description=STRING)? '{'
+		(element+=LogicalElement | ldm+=LogicalDataModel)*
+	'}'
+;
+
+/** A PlatformDataModel is a container for platform Data Model elements. */
+PlatformDataModel:
+	'pdm'	name=ID (description=STRING)? '{'
+		(element+=PlatformElement | pdm+=PlatformDataModel)*
+	'}'
+;
+
+/** A conceptual Element is the root type for defining the conceptual elements of a Data Model. */
+ConceptualElement:
+	ConceptualDomain |
+	ConceptualBasisEntity |
+	ConceptualComposableElement |
+	ConceptualView
+;
+
+/** A conceptual ComposableElement is a conceptual Element that is allowed to participate in a Composition relationship. In other words, these are the conceptual Elements that may be a characteristic of a conceptual Entity. */
+ConceptualComposableElement:
+	ConceptualEntity |
+	ConceptualObservable
+;
+//NOTE: BasisElement has single inheritance - it has no independent functionality so it gets dropped
+// A conceptual BasisElement is a conceptual data type that is independent of any specific data representation.
+
+/** A BasisEntity represents a unique domain concept and establishes a basis which can be used by conceptual Entities.  */
+ConceptualBasisEntity:
+	'basis' name=ID (description=STRING)? ';'
+;
+
+/** A Domain represents a space defined by a set of BasisEntities relating to well understood concepts by practitioners within a particular domain.  */
+ConceptualDomain:
+	'domain' name=ID (description=STRING)? 
+		('[' basisEntity+=[ConceptualBasisEntity|QN]+ ']')?
+	';'
+;
+
+/** An Observable is something that can be observed but not further characterized, and is typically quantified through measurements of the physical world. An observable is independent of any specific data representation, units, or reference frame. For example, “length” may be thought of as an observable in that it can be measured, but at the conceptual level the nature of the measurement is not specified. */
+ConceptualObservable:
+	'observable' name=ID (description=STRING)? ';'
+;
+
+/** Either a ConceptualComposition or a ConceptualParticipant.
+ * A conceptual Characteristic contributes to the uniqueness of a conceptual Entity. The “rolename” attribute defines the name of the conceptual Characteristic within the scope of the conceptual Entity. The “lowerBound” and “upperBound” attributes define the multiplicity of the composed Characteristic. An “upperBound” multiplicity of –1 represents an unbounded sequence. */
+ConceptualCharacteristic:
+	ConceptualComposition |
+	ConceptualParticipant
+;
+
+/** A conceptual Entity represents a domain concept in terms of its Observables and other composed conceptual Entities. Since a conceptual Entity is built only from conceptual ComposableElements, it is independent of any specific data representation, units, or reference frame. */
+ConceptualEntity:
+	ConceptualAssociation |
+	'centity' name=ID (description=STRING)? (':' specializes=[ConceptualEntity|QN])? '{'
+		composition+=ConceptualComposition*
+		('basis:' '[' basisEntity+=[ConceptualBasisEntity|QN]+ ']')?
+	'};'
+;
+
+/** A conceptual Composition is the mechanism that allows conceptual Entities to be constructed from other conceptual ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the conceptual Entity. */
+ConceptualComposition:
+	type=[ConceptualComposableElement|QN]  rolename=ID ('[' (lowerBound=INT)? ':' (upperBound=(INT|SIGNED_INT))? ']')? (description=STRING)? (':' specializes=[ConceptualCharacteristic|QN])? ';'
+;
+
+/** A conceptual Association represents a relationship between two or more conceptual Entities. The conceptual Entities participating in the conceptual Association may be specified locally or in its generalized types. In addition, there may be one or more conceptual ComposableElements that characterize the relationship. Conceptual Associations are conceptual Entities that may also participate in other conceptual Associations. */
+ConceptualAssociation:
+		'cassoc' name=ID (description=STRING)? (':' specializes=[ConceptualEntity|QN])? '{'
+		composition+=ConceptualComposition*
+		('basis:' '[' basisEntity+=[ConceptualBasisEntity|QN]+ ']')?
+		('participants:' '[' participant+=ConceptualParticipant+ ']')?
+	'};'
+;
+
+/** A conceptual Participant is the mechanism that allows a conceptual Association to be constructed between two or more conceptual Entities. The “type” of a conceptual Participant is the conceptual Entity being used to construct the conceptual Association. The “sourceLowerBound” and “sourceUpperBound” attributes define the multiplicity of the conceptual Association relative to the Participant. A “sourceUpperBound” multiplicity of –1 represents an unbounded sequence. The “path” attribute of the Participant describes the chain of entity characteristics to traverse to reach the subject of the association beginning with the entity referenced by the “type” attribute.  */
+ConceptualParticipant:
+	type=[ConceptualEntity|QN]  rolename=ID ('[' (lowerBound=INT)? ':' (upperBound=(INT|SIGNED_INT))? ']')? (description=STRING)? (':' specializes=[ConceptualCharacteristic|QN])?
+		'{'
+			'src:' '['sourceLowerBound=INT ':' sourceUpperBound=(INT|SIGNED_INT) ']'
+			('path:' path=ConceptualPathNode)?
+		'}'
+		';'
+;
+
+/** Either a ConceptualParticipantPathNode or a ConceptualCharacteristicPathNode.
+ * A conceptual PathNode is a single element in a chain that collectively forms a path specification. */
+ConceptualPathNode:
+	ConceptualParticipantPathNode |
+	ConceptualCharacteristicPathNode
+;
+
+// NOTE: There is something I did to set up the path resolution here that made things very succinct. I think it had to do
+// with the NameProvider?
+/** A conceptual ParticipantPathNode is a conceptual PathNode that selects a Participant that references an Entity. This provides a mechanism for reverse navigation from an Entity that participates in an Association back to the Association. */
+ConceptualParticipantPathNode:
+	'/' projectedParticipant=[ConceptualParticipant|QN] 
+	( node=ConceptualPathNode )?
+;
+
+/** A conceptual CharacteristicPathNode is a conceptual PathNode that selects a conceptual Characteristic which is directly contained in a conceptual Entity or Association. */
+ConceptualCharacteristicPathNode:
+	'#' projectedCharacteristic=[ConceptualCharacteristic|QN] 
+	( node=ConceptualPathNode )?
+;
+
+/** Either a ConceptualQuery or a ConceptualCompositeQuery.
+ * A conceptual View is a conceptual Query or a conceptual CompositeQuery. */
+ConceptualView:
+	ConceptualQuery |
+	ConceptualCompositeQuery
+;
+
+/** A conceptual Query is a specification that defines the content of conceptual View as a set of conceptual Characteristics projected from a selected set of related conceptual Entities. The “specification” attribute captures the specification of a Query as defined by the Query grammar.  */
+ConceptualQuery:
+	'cquery' name=ID (description=STRING)? '{'
+		'spec:' specification=STRING
+	'};'
+;
+
+/** A conceptual CompositeQuery is a collection of two or more conceptual Views. The “isUnion” attribute specifies whether the composed Views are intended to be mutually exclusive or not. */
+ConceptualCompositeQuery:
+	'ccquery' name=ID (description=STRING)? '{'
+		isUnion?='isUnion'
+		composition+=ConceptualQueryComposition
+		(composition+=ConceptualQueryComposition)+
+	'};'
+;
+
+/** A conceptual QueryComposition is the mechanism that allows a conceptual CompositeQuery to be constructed from conceptual Queries and other conceptual CompositeQueries. The “rolename” attribute defines the name of the composed conceptual View within the scope of the composing conceptual CompositeQuery. The “type” of a conceptual QueryComposition is the conceptual View being used to construct the conceptual CompositeQuery. */
+ConceptualQueryComposition:
+	type=[ConceptualView|QN] rolename=ID ';'
+;
+
+
+/** A logical Element is the root type for defining the logical elements of a Data Model. */
+LogicalElement:
+	LogicalComposableElement |
+	LogicalConversion | // LogicalConversion has a single inheritance of LogicalAffineConversion - so that is promoted to here
+	LogicalUnit | //LogicalConvertibleElement | // LogicalConvertibleElement has a single inheritance of LogicalUnit - promote that to here
+	LogicalCoordinateSystem |
+	LogicalCoordinateSystemAxis |
+	LogicalMeasurementConversion |
+	LogicalMeasurementSystemConversion |
+	LogicalMeasurementAxis | // Also derived from AbstractMeasurement
+	LogicalAbstractMeasurementSystem| //LogicalMeasurementSystem |
+	LogicalMeasurementSystemAxis |
+	LogicalValueType | // Also derived from AbstractMeasurement
+	LogicalView |
+	LogicalLandmark |
+	LogicalValueTypeUnit
+;
+
+// NOTE: LogicalConvertibleElement has LogicalUnit as a single inheritance. Since it has nothing else, promote LogicalUnit directly
+// to LogicalElement
+/** A ConvertibleElement is a Unit. */
+
+/** A Unit is a defined magnitude of quantity used as a standard for measurement.  */
+LogicalUnit:
+	'lunit' name=ID (description=STRING)? ';'
+;
+
+// NOTE: LogicalConversion has LogicalAffineConversion as a single inheritance. Since it has nothing else, promote LogicalAffineConversion directly
+// to LogicalElement
+/** A Conversion is a relationship between two ConvertibleElements that describes how to transform measured quantities between two Units. */
+LogicalConversion:
+	'conv' name=ID  (description=STRING)? '{'
+		source=[LogicalUnit|QN] '-()>'  destination=[LogicalUnit|QN]
+		'};' |
+	LogicalAffineConversion
+;
+
+/** An AffineConversion is a relationship between two ConvertibleElements in the form mx+b. */
+LogicalAffineConversion:
+	'aconv' name=ID  (description=STRING)? '{'
+		source=[LogicalUnit|QN] '-(' 'm:' conversionFactor=FLOAT 'b:' offset=FLOAT ')->'  target=[LogicalUnit|QN]
+	'};'
+;
+
+/** A ValueType specifies the logical representation of a MeasurementSystem or Measurement. Integer, Real, and String are examples of logical ValueTypes. */
+LogicalValueType:
+	LogicalBoolean |
+	LogicalNumeric |
+	LogicalCharacter |
+	LogicalString |
+	LogicalEnumerated // EXTENSION
+;
+
+/** A String is a value type that represents a variable length sequence of characters. */
+LogicalString: 					'str' 	name=ID (description=STRING)? ';' 	;
+
+/** A Character is a value type representing characters from any character set. */
+LogicalCharacter: 				'ch' 	name=ID (description=STRING)? ';'	;
+
+/** A Boolean is a value type representing the two values TRUE and FALSE. */
+LogicalBoolean:					'bool' 	name=ID (description=STRING)? ';'	;
+
+/** A Numeric is a numeric ValueType. */
+LogicalNumeric:
+	LogicalInteger |
+	LogicalNatural |
+	LogicalReal |
+	LogicalNonNegativeReal
+;
+
+/** An Integer is a value type representing integer numbers. */
+LogicalInteger:					'int' 	name=ID (description=STRING)? ';'	;
+
+/** A Natural is a value type representing the non-negative integers. */
+LogicalNatural:					'nat' 	name=ID (description=STRING)? ';'	;
+
+/** A Real is a value type representing real numbers. */
+LogicalReal:					'real' 	name=ID (description=STRING)? ';'	;
+
+/** A NonNegativeReal is a value type representing non-negative real numbers. */
+LogicalNonNegativeReal:			'real+' name=ID (description=STRING)? ';'	;
+
+/** An Enumerated is a value type representing a set of named values, each with specific meaning. */
+LogicalEnumerated:
+	'enum' 	name=ID (description=STRING)? ('stdRef:' standardReference=STRING)?
+		'['
+		label+=(LogicalEnumerationLabel | LogicalEnumeratedSet) ','? (label+=(LogicalEnumerationLabel| LogicalEnumeratedSet) ','?)*
+		']'
+		';'
+		;
+/**EXTENSION: The foundation for every taxonomic type hierarchy. Override and extend as needed */
+Taxonomy:
+	LogicalEnumeratedBase
+//	| LogicalEnumerated
+;
+/**EXTENSION: Creates the foundation for a hierarchy of enumerated values. LogicalEnumerated is kept separate because we need to make a
+ * distinction between LogicalEnumerated and LogicalEnumerationLabel - otherwise, we end up with too many choices when selected LogicalElement values.
+ */
+LogicalEnumeratedBase:
+	LogicalEnumeratedSet 
+	| LogicalEnumerationLabel 
+	| LogicalEnumerated
+;
+
+/**EXTENSION: allowing label to be a LogicalEnumeratedSet enables taxonomy definitions via enumerations  */
+LogicalEnumeratedSet:
+		'(' name=ID (description=STRING)? 
+		'['
+		label+=(LogicalEnumerationLabel | LogicalEnumeratedSet) ','? (label+=(LogicalEnumerationLabel| LogicalEnumeratedSet) ','?)*
+		']' ')'
+		;
+
+/** An EnumerationLabel defines a named member of an Enumerated value set. */
+LogicalEnumerationLabel:	name=ID |	'(' name=ID description=STRING ')' ;
+
+/** A CoordinateSystem is a system which uses one or more coordinates to uniquely determine the position of a point in an N-dimensional space. The coordinate system is comprised of multiple CoordinateSystemAxis which completely span the space. Coordinates are quantified relative to the CoordinateSystemAxis. It is not required that the dimensions be ordered or continuous. */
+LogicalCoordinateSystem:
+	'coord' name=ID (description=STRING)? '{'
+		('axis:' 		axisRelationshipDescription=STRING)?
+		('angleEq:' 	angleEquation=STRING)?
+		('distanceEq:' 	distanceEquation=STRING)?
+		'['axis+=[LogicalCoordinateSystemAxis|QN]+ ']'
+	'};'
+;
+
+/** A CoordinateSystemAxis represents a dimension within a CoordinateSystem. */
+LogicalCoordinateSystemAxis:
+	'csa' name=ID (description=STRING)? ';'
+;
+
+
+/** An AbstractMeasurementSystem is an abstract parent for StandardMeasurementSystems and MeasurementSystems. It is used for structural simplicity in the metamodel.  */
+LogicalAbstractMeasurementSystem:
+	LogicalStandardMeasurementSystem |
+	LogicalMeasurementSystem
+;
+
+/** A StandardMeasurementSystem is used to represent an open, referenced measurement system without requiring the detailed modeling of the measurement system. The reference should be unambiguous and allows for full comprehension of the underlying measurement system. */
+LogicalStandardMeasurementSystem:
+	'smsys' name=ID (description=STRING)? '{'
+		'refStd:' referenceStandard=STRING
+	'};'
+;
+
+/** A Landmark is a named, recognizable or artificial feature used to locate a ReferencePoint in a measurable space. */
+LogicalLandmark:
+	'landmark' name=ID (description=STRING)? ';'
+;
+
+/** A MeasurementSystem relates a CoordinateSystem to an origin and orientation for the purpose of establishing a common basis for describing points in an N-dimensional space. Defining a MeasurementSystem establishes additional properties of the CoordinateSystem including units and value types for each axis, and a set of reference points that can be used to establish an origin and indicate the direction of each axis. */
+LogicalMeasurementSystem:
+	'msys' name=ID (description=STRING)? '{'
+		'msa:' '[' measurementSystemAxis+=[LogicalMeasurementSystemAxis|QN]+ ']'
+		'coord:' coordinateSystem=[LogicalCoordinateSystem|QN]
+		('extRefStd:' externalStandardReference=STRING)?
+		('orient:' orientation=STRING)?
+		('refPt:' '[' referencePoint+=LogicalReferencePoint+ ']')?
+		('![' constraint+=LogicalMeasurementConstraint+ ']')?
+	'};'
+;
+
+/** A MeasurementSystemAxis establishes additional properties for a CoordinateSystemAxis including units and value types. */
+LogicalMeasurementSystemAxis:
+	'msa' name=ID (description=STRING)? '{'
+		'axis:' axis=[LogicalCoordinateSystemAxis|QN]
+		'vtu:' '[' defaultValueTypeUnit+=[LogicalValueTypeUnit|QN]+ ']'
+		('![' constraint+=LogicalMeasurementConstraint+ ']'	)?
+	'};'
+;
+
+/** A ReferencePoint is an identifiable point (landmark) that can be used to provide a basis for locating and/or orienting a MeasurementSystem. */
+LogicalReferencePoint:
+	'(' name=ID (description=STRING)?
+		'landmark:' landmark=[LogicalLandmark|QN]
+		'[' referencePointPart+=LogicalReferencePointPart+ ']'
+	')'
+;
+
+/** A ReferencePointPart is a value for one ValueTypeUnit in a ValueTypeUnit set that is used to identify a specific point along an axis.  */
+LogicalReferencePointPart:
+	'(' (axis=[LogicalMeasurementSystemAxis|QN])?  value=STRING  (valueTypeUnit=[LogicalValueTypeUnit|QN])? ')'
+;
+
+/** A ValueTypeUnit defines the logical representation of a MeasurementSystemAxis or MeasurementAxis value type in terms of a Unit and ValueType pair. */
+LogicalValueTypeUnit:
+	'vtu' valueType=[LogicalValueType|QN] unit=[LogicalUnit|QN] name=ID (description=STRING)?
+	// NOTE: This has a single, optional attribute - so the curlies are optional as well
+	('{' '!' constraint=LogicalConstraint '}')?
+	 ';'
+;
+
+/** A Constraint limits the set of possible values for the ValueType of a MeasurementSystem or Measurement. */
+LogicalConstraint:
+	LogicalStringConstraint |
+	LogicalRealRangeConstraint | //LogicalRealConstraint | //LogicalRealConstraint has a single inheritance of LogicalRealRangeConstraint - promote that to here
+	LogicalIntegerRangeConstraint | //LogicalIntegerConstraint | //LogicalIntegerConstraint has single inheritance of LogicalIntegerRangeConstraint
+	LogicalEnumerationConstraint
+;
+
+/** An IntegerConstraint specifies a defined set of meaningful values for an Integer or Natural. */
+//LogicalIntegerConstraint:
+//	LogicalIntegerRangeConstraint
+//;
+/** An IntegerRangeConstraint specifies a defined range of meaningful values for an Integer or Natural. The “upperBound” is greater than or equal to the “lowerBound”. The defined range is inclusive of the “upperBound” and “lowerBound”. */
+LogicalIntegerRangeConstraint:
+	'irc'  name=ID '[' lowerBound=(INT|SIGNED_INT) ':' upperBound=(INT|SIGNED_INT) ']' (description=STRING)?  ';'
+;
+/** A RealConstraint specifies a defined set of meaningful values for a Real or NonNegativeReal. */
+//LogicalRealConstraint:
+//	LogicalRealRangeConstraint
+//;
+
+// TODO: There is a way to default this to handle the include exclude bounds - is this it?
+/** A RealRangeConstraint specifies a defined range of meaningful values for a Real or NonNegativeReal. The “upperBound” is greater than or equal to the “lowerBound”. */
+LogicalRealRangeConstraint:
+	'rrc' name=ID ( '(' | lowerBoundInclusive?='[') lowerBound=FLOAT ':' upperBound=FLOAT (')'| upperBoundInclusive?=']') (description=STRING)?  ';'
+;
+
+/** A StringConstraint specifies a defined set of meaningful values for a String */
+LogicalStringConstraint:
+	LogicalRegularExpressionConstraint |
+	LogicalFixedLengthStringConstraint
+;
+
+/** A RegularExpressionConstraint specifies a defined set of meaningful values for a String in the form of a regular expression. */
+LogicalRegularExpressionConstraint:
+	'rec' name=ID '[' expression=STRING ']'(description=STRING)? ';'
+;
+
+/** A FixedLengthStringConstraint specifies a defined set of meaningful values for a String of a specific fixed length. The “length” attribute defines the fixed length, an integer value greater than 0. */
+LogicalFixedLengthStringConstraint:
+	'flsc' name=ID '[' length=INT ']' (description=STRING)? ';'
+;
+
+// NOTE: While the spec technically allows zero labels, it makes no sense to have a constraint that doesn't
+// actually constrain anything. It might be in dynamic cases that this list could end up being empty - but
+// for now we assume it has to have at least 1 value
+/** An EnumerationConstraint identifies a subset of enumerated values (EnumerationLabel) considered valid for an Enumerated value type of a MeasurementAxis. */
+LogicalEnumerationConstraint :
+	{LogicalEnumerationConstraint} 'ec' name=ID (description=STRING)? ('[' (allowedValue+=[LogicalEnumeratedBase|QN])+ ']')?
+;
+
+/** A MeasurementConstraint describes the constraints over the axes of a given MeasurementSystem or Measurement or over the value types of a MeasurementSystemAxis or MeasurementAxis. The constraints are described in the “constraintText” attribute. The specific format of “constraintText” is undefined. */
+LogicalMeasurementConstraint:
+	 constraintText=STRING
+;
+
+/** A MeasurementSystemConversion is a relationship between two MeasurementSystems that describes how to transform measured quantities between those MeasurementSystems. The conversion is captured as a set of equations in the “equation” attribute. The specific format of “equation” is undefined. The loss introduced by the conversion equations is captured in the “conversionLossDescription” attribute. The specific format of “conversionLossDescription” is undefined. */
+LogicalMeasurementSystemConversion:
+	'msc' name=ID  (description=STRING)? '{'
+		source=[LogicalMeasurementSystem|QN] '-('equation+=STRING (',' equation+=STRING)? ')>' destination=[LogicalMeasurementSystem|QN]
+		'loss:' conversionLossDescription=STRING
+	'};'
+;
+
+
+// TODO: XText doesn't do multiple inheritance. Address this via a ScopeProvider
+// See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
+// Use a FilteringScope
+/** An AbstractMeasurement is a Measurement, MeasurementAxis, or a ValueTypeUnit. */
+LogicalAbstractMeasurement:
+	LogicalMeasurement |  // Use LogicalComposableElement
+	LogicalMeasurementAxis | // Use LogicalElement
+	LogicalValueTypeUnit  //Use LogicalElement
+;
+
+/** A Measurement realizes an Observable as a set of quantities that can be recorded for each axis of a MeasurementSystem. A Measurement contains the specific implementation details optionally including an override of the default ValueType and Unit for each axis as well as the constraints over that space for which the MeasurementSystem is valid. */
+LogicalMeasurement:
+	'meas' name=ID  (description=STRING)? '->' realizes=[ConceptualObservable|QN] '{'
+		attribute+=LogicalMeasurementAttribute*
+		('axis:' '[' measurementAxis+=[LogicalMeasurementAxis|QN]+ ']')?
+		'sys:' measurementSystem=[LogicalAbstractMeasurementSystem|QN]
+		('![' constraint+=LogicalMeasurementConstraint ']')?
+	'};'
+;
+
+/** A MeasurementAxis optionally establishes constraints for a MeasurementSystemAxis and may optionally override its default units and value types. */
+LogicalMeasurementAxis:
+	'maxis' name=ID  (description=STRING)? ('->' realizes=[ConceptualObservable|QN])? '{'
+		'msaxis:' measurementSystemAxis=[LogicalMeasurementSystemAxis|QN]
+		('vtu:' '[' valueTypeUnit+=[LogicalValueTypeUnit|QN]+ ']')?
+		('![' constraint+=LogicalMeasurementConstraint+ ']')?
+	'};'
+;
+
+/** A MeasurementAttribute is supplemental data associated with a Measurement.  */
+LogicalMeasurementAttribute:
+	type=[LogicalMeasurement|QN] rolename=ID ';'
+;
+
+/** A MeasurementConversion is a relationship between two Measurements that describes how to transform measured quantities between those Measurements. The conversion is captured as a set of equations in the “equation” attribute. The specific format of “equation” is undefined. The loss introduced by the conversion equations is captured in the “conversionLossDescription” attribute. The specific format of “conversionLossDescription” is undefined. */
+LogicalMeasurementConversion:
+	'mc' name=ID  (description=STRING)? '{'
+		source=[LogicalMeasurement|QN] '-(' equation+=STRING (',' equation+=STRING)? ')>' target=[LogicalMeasurement|QN]
+		'loss:' conversionLossDescription=STRING
+	'};'
+;
+
+/** A logical ComposableElement is a logical Element that is allowed to participate in a Composition relationship. In other words, these are the logical Elements that may be a characteristic of a logical Entity. */
+LogicalComposableElement:
+	LogicalEntity |
+	LogicalMeasurement  // Also derived from AbstractMeasurement
+;
+
+/** Either a LogicalComposition or a LogicalParticipant.
+ * A logical Characteristic contributes to the uniqueness of a logical Entity. The “rolename” attribute defines the name of the logical Characteristic within the scope of the logical Entity. The “lowerBound” and “upperBound” attributes define the multiplicity of the composed Characteristic. An “upperBound” multiplicity of –1 represents an unbounded sequence. */
+LogicalCharacteristic:
+	LogicalComposition |
+	LogicalParticipant
+;
+
+/** 
+ * A logical Entity “realizes” a conceptual Entity in terms of Measurements and other logical Entities. Since a logical Entity is built from 
+ * logical Measurements, it is independent of any specific platform data representation. A logical Entity's composition hierarchy is consistent 
+ * with the composition hierarchy of the conceptual Entity that it realizes. The logical Entity’s composed Entities realize one to one the conceptual 
+ * Entity’s composed Entities; the logical Entity’s composed Measurements realize many to one the conceptual Entity’s composed Observables.
+ */
+LogicalEntity:
+	'lentity' name=ID  (description=STRING)? (':' specializes=[LogicalEntity|QN])? '->' realizes=[ConceptualEntity|QN] '{'
+		composition+=LogicalComposition*
+	'};'
+	| LogicalAssociation
+;
+
+/** A logical Composition is the mechanism that allows logical Entities to be constructed from other logical ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the logical Entity. The “lowerBound” and “upperBound” define the multiplicity of the composed logical Entity. An “upperBound” multiplicity of –1 represents an unbounded sequence. */
+LogicalComposition:
+	type=[LogicalComposableElement|QN]  rolename=ID ('[' lowerBound=INT ':' upperBound=(INT|SIGNED_INT) ']')? (description=STRING)? (':' specializes=[LogicalCharacteristic|QN])?  '->' realizes=[ConceptualComposition|QN] ';'
+
+;
+
+/** A logical Association represents a relationship between two or more logical Entities. The logical Entities participating in the logical Association may be specified locally or in its generalized types. In addition, there may be one or more logical ComposableElements that characterize the relationship. Logical Associations are logical Entities that may also participate in other logical Associations. */
+LogicalAssociation:
+	'lassoc' name=ID  (description=STRING)? (':' specializes=[LogicalEntity|QN])? '->' realizes=[ConceptualEntity|QN] '{'
+		composition+=LogicalComposition*
+		// While technically this is optional, it makes no sense to have an Association with less than 2 participants. However,
+		// Those participants can be named anywhere in the inheritance/ specializes hierarchy - not just locally
+		('participants:' '[' participant+=LogicalParticipant+ ']')?
+	'};'
+;
+
+/** A logical Participant is the mechanism that allows a logical Association to be constructed between two or more logical Entities. The “type” of a logical Participant is the logical Entity being used to construct the logical Association. The “sourceLowerBound” and “sourceUpperBound” attributes define the multiplicity of the logical Association relative to the Participant. A “sourceUpperBound” multiplicity of –1 represents an unbounded sequence. The “path” attribute of the Participant describes the chain of entity characteristics to traverse to reach the subject of the association beginning with the entity referenced by the “type” attribute. */
+LogicalParticipant:
+	type=[LogicalEntity|QN]  rolename=ID ('[' lowerBound=INT ':' upperBound=(INT|SIGNED_INT) ']')? (description=STRING)? (':' specializes=[LogicalCharacteristic|QN])?  '->' realizes=[ConceptualParticipant|QN] '{'
+		'source:' '[' sourceLowerBound=INT ':' sourceUpperBound=(INT|SIGNED_INT) ']'
+		('path:' path=LogicalPathNode )?
+	'};'
+;
+
+/** A logical PathNode is a single element in a chain that collectively forms a path specification. */
+LogicalPathNode:
+	LogicalParticipantPathNode |
+	LogicalCharacteristicPathNode
+;
+
+/** A logical ParticipantPathNode is a logical PathNode that selects a Participant that references an Entity. This provides a mechanism for reverse navigation from an Entity that participates in an Association back to the Association. */
+LogicalParticipantPathNode:
+	'/' projectedParticipant=[LogicalParticipant|QN]  ( node=LogicalPathNode)
+;
+
+/** A logical CharacteristicPathNode is a logical PathNode that selects a logical Characteristic which is directly contained in a logical Entity or Association. */
+LogicalCharacteristicPathNode:
+	'#' projectedCharacteristic=[LogicalCharacteristic|QN]  ( node=LogicalPathNode)
+
+;
+
+/** A logical View is a logical Query or a logical CompositeQuery. */
+LogicalView:
+	LogicalQuery |
+	LogicalCompositeQuery
+;
+
+/** A logical Query is a specification that defines the content of logical View as a set of logical Characteristics projected from a selected set of related logical Entities. The “specification” attribute captures the specification of a Query as defined by the Query grammar. */
+LogicalQuery:
+	'lquery' name=ID  (description=STRING)? ('->' realizes=[ConceptualQuery|QN])? '{'
+		'spec:' specification=STRING
+		'};'
+;
+
+/** A logical CompositeQuery is a collection of two or more logical Views. The “isUnion” attribute specifies whether the composed Views are intended to be mutually exclusive or not. */
+LogicalCompositeQuery:
+	'lcquery' name=ID  (description=STRING)? ('->' realizes=[ConceptualCompositeQuery|QN])? '{'
+		isUnion?='isUnion'
+		composition+=LogicalQueryComposition
+		'};'
+;
+
+/** A logical QueryComposition is the mechanism that allows a logical CompositeQuery to be constructed from logical Queries and other logical CompositeQueries. The “rolename” attribute defines the name of the composed logical View within the scope of the composing logical CompositeQuery. The “type” of a logical QueryComposition is the logical View being used to construct the logical CompositeQuery. */
+LogicalQueryComposition:
+	type=[LogicalView|QN] rolename=ID ( '->' realizes=[ConceptualQueryComposition|QN])? ';'
+;
+
+/* * * * * * * Platform Level Rules * * * * * *  */
+/** A platform Element is the root type for defining the platform elements of a Data Model. */
+PlatformElement:
+	PlatformComposableElement |
+	PlatformView
+;
+
+/** A platform ComposableElement is a platform Element that is allowed to participate in a Composition relationship. In other words, these are the platform Elements that may be a characteristic of a platform Entity. */
+PlatformComposableElement:
+	PlatformEntity |
+	PlatformDataType
+;
+
+/** A PlatformDataType is a platform realization of a logical AbstractMeasurement and is either a Primitive or a Struct. */
+PlatformDataType:
+	PlatformPrimitive |
+	PlatformStruct
+;
+
+/** A platform Primitive realizes a logical AbstractMeasurement in terms of a simple data type. */
+PlatformPrimitive:
+	PlatformSequence |
+	PlatformBoolean |
+	PlatformChar | //PlatformCharType | // skip single inheritance
+	PlatformNumber |
+	PlatformOctet |
+	PlatformEnumeration |
+	PlatformStringType |
+	PlatformArray
+;
+
+/** A Boolean is a data type that represents the values TRUE and FALSE. */
+PlatformBoolean:			'bool'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** An Octet is an 8-bit quantity that is guaranteed not to undergo any conversion during transfer between systems. */
+PlatformOctet:				'octet'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+// Skip single inheritance - XText doesn't float attributes up when there is single inheritance.
+///** A CharType is a Char. */
+//PlatformCharType:
+//	PlatformChar 
+////	| PlatformWChar // NOTE: WChar was removed from the spec. Not clear is we want it
+//;
+
+/** A Char is a data type that represents characters from any single byte character set. */
+PlatformChar:				'char'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+//PlatformWChar:				'wchar'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A StringType is a BoundedString, an unbounded String, or a CharArray. */
+PlatformStringType:
+	PlatformString |
+	PlatformBoundedString |
+	PlatformCharArray
+;
+
+/** A String is a data type that represents a variable length sequence of Char (all 8-bit quantities except NULL). The length is a non-negative integer, and is available at run-time. */
+PlatformString:				'string'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A BoundedString is a data type that represents a variable length sequence of Char (all 8-bit quantities except NULL). The length is a non-negative integer, and is available at run-time. The “maxLength” attribute defines the maximum length of the BoundedString, an integer value greater than 0. */
+PlatformBoundedString:		'string[' maxLength=INT ']'  	name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A CharArray is a data type that represents a fixed length sequence of Char (all 8-bit quantities except NULL). The length is a positive integer, and is available at run-time. The “length” attribute defines the length of the CharArray, an integer value greater than 0. */
+PlatformCharArray:			'char['   length=INT ']'  		name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** An Enumeration is a data type that represents an ordered list of identifiers. */
+PlatformEnumeration:		'enum'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A Number is an abstract meta-class from which all meta-classes representing numeric values derive. */
+PlatformNumber:
+	PlatformReal |
+	PlatformInteger
+;
+
+/** An Integer is an abstract meta-class from which all meta-classes representing whole numbers derive. */
+PlatformInteger:
+	PlatformLong |
+	PlatformShort |
+	PlatformUnsignedInteger |
+	PlatformLongLong
+;
+
+/** A Short is an integer data type that represents integer values in the range –2^15 to (2^15 – 1). */
+PlatformShort:				'short'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A Long is an integer data type that represents integer values in the range –2^31 to (2^31 – 1). */
+PlatformLong:				'long'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A LongLong is an integer data type that represents integer values in the range –2^63 to (2^63 – 1). */
+PlatformLongLong:			'llong'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A Real is an abstract meta-class from which all meta-classes representing real numbers derive. */
+PlatformReal:
+	PlatformFixed |
+	PlatformFloat |
+	PlatformDouble |
+	PlatformLongDouble
+;
+
+/** A Double is a real data type that represents an IEEE double precision floating-point number.  */
+PlatformDouble:				'double'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A LongDouble is a real data type that represents an IEEE extended double precision floating- point number (having a signed fraction of at least 64 bits and an exponent of at least 15 bits) */
+PlatformLongDouble:			'ldouble'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A Float is a real data type that represents an IEEE single precision floating-point number. */
+PlatformFloat:				'float'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A Fixed is a real data type that represents a fixed-point decimal number of up to 31 significant digits. The “digits” attribute defines the total number of digits, a non-negative integer value less than or equal to 31. The “scale” attribute defines the position of the decimal point in the number, and cannot be greater than “digits”. */
+PlatformFixed:				'fixed[' digits=INT '.' scale=INT ']'
+															name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';'
+;
+
+/** An UnsignedInteger is an abstract meta-class from which all meta-classes representing unsigned whole numbers derive. */
+PlatformUnsignedInteger:
+	PlatformUShort |
+	PlatformULong |
+	PlatformULongLong
+;
+
+/** A UShort is an integer data type that represents integer values in the range 0 to (2^16 – 1).  */
+PlatformUShort:				'ushort'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A ULong is an integer data type that represents integer values in the range 0 to (2^32 – 1). */
+PlatformULong:				'ulong'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A ULongLong is an integer data type that represents integer values in the range 0 to (2^64 – 1). */
+PlatformULongLong:			'ullong'  						name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A Sequence is used to represent a sequence of Octets. This can be used to realize a StandardMeasurementSystem. */
+PlatformSequence:			'seq' ('[' maxSize=INT ']')?  	name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** An Array is used to represent an array of Octets. This can be used to realize a StandardMeasurementSystem. */
+PlatformArray:				'arr' ('[' size=INT ']')?  		name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] ';' ;
+
+/** A platform Struct is a structured realization of a logical AbstractMeasurement. It is composed of PlatformDataTypes (i.e., Primitives and other Structs composed of Primitives). A platform Struct’s composition hierarchy is consistent with the composition hierarchy of the logical AbstractMeasurement that it realizes. */
+PlatformStruct:
+	'struct' name=ID  (description=STRING)? '->' realizes=[LogicalAbstractMeasurement/*LogicalElement*/|QN] '{'
+		member+=PlatformStructMember
+		member+=PlatformStructMember
+		(member+=PlatformStructMember*)
+	'};'
+;
+
+/** A StructMember is the mechanism that allows Structs to be constructed from other PlatformDataTypes. The “type” of a StructMember is the PlatformDataType being used to construct the Struct. If “type” is a Primitive, the “precision” attribute specifies a measure of the detail in which a quantity is captured. */
+PlatformStructMember:
+	type=[PlatformDataType|QN] rolename=ID ('(' precision=FLOAT ')')? ('->' realizes=[LogicalMeasurementAttribute|QN] )? ';'
+;
+
+/** A platform Characteristic contributes to the uniqueness of a platform Entity. The “rolename” attribute defines the name of the platform Characteristic within the scope of the platform Entity. The “lowerBound” and “upperBound” attributes define the multiplicity of the composed Characteristic. An “upperBound” multiplicity of –1 represents an unbounded sequence. */
+PlatformCharacteristic:
+	PlatformComposition |
+	PlatformParticipant
+;
+
+/** 
+ * A platform Entity “realizes” a logical Entity in terms of PhysicalDataTypes and other platform Entities composed of PhysicalDataTypes. 
+ * A platform Entity’s composition hierarchy is consistent with the composition hierarchy of the logical Entity that it realizes. 
+ * The platform Entity’s composed Entities realize one to one the logical Entity’s composed Entities; the platform Entity’s composed PhysicalDataTypes 
+ * realize many to one the logical Entity’s composed Measurements. 
+ */
+PlatformEntity:
+	'pentity' name=ID  (description=STRING)? (':' specializes=[PlatformEntity|QN])? '->' realizes=[LogicalEntity|QN] '{'
+		composition+=PlatformComposition*
+	'};'
+	| PlatformAssociation
+;
+
+/** A platform Composition is the mechanism that allows platform Entities to be constructed from other platform ComposableElements. The “type” of a Composition is the ComposableElement being used to construct the platform Entity. The “lowerBound” and “upperBound” define the multiplicity of the composed platform Entity. An “upperBound” multiplicity of –1 represents an unbounded sequence. If “type” is a Primitive, the “precision” attribute specifies a measure of the detail in which a quantity is captured.  */
+PlatformComposition:
+	type=[PlatformComposableElement|QN]  rolename=ID ('[' lowerBound=INT ':' upperBound=(INT|SIGNED_INT) ']')? (description=STRING)? (':' specializes=[PlatformCharacteristic|QN])?  '->' realizes=[LogicalComposition|QN]
+		// NOTE: This has a single, optional attribute - so the curlies are optional also
+		('{'
+			'prec:' precision=FLOAT
+		'}')? ';'
+;
+
+/** A platform Association represents a relationship between two or more platform Entities. The platform Entities participating in the platform Association may be specified locally or in its generalized types. In addition, there may be one or more platform ComposableElements that characterize the relationship. Platform Associations are platform Entities that may also participate in other platform Associations. */
+PlatformAssociation:
+	'passoc' name=ID  (description=STRING)? (':' specializes=[PlatformEntity|QN])? '->' realizes=[LogicalEntity|QN] '{'
+		composition+=PlatformComposition*
+		// While technically this is optional, it makes no sense to have an Association with less than 2 participants. However,
+		// Those participants can be named anywhere in the inheritance/ specializes hierarchy - not just locally
+		('participants:' '[' participant+=PlatformParticipant+ ']')?
+	'};'
+;
+
+/** A platform Participant is the mechanism that allows a platform Association to be constructed between two or more platform Entities. The “type” of a platform Participant is the platform Entity being used to construct the platform Association. The “sourceLowerBound” and “sourceUpperBound” attributes define the multiplicity of the platform Association relative to the Participant. A “sourceUpperBound” multiplicity of –1 represents an unbounded sequence. The “path” attribute of the Participant describes the chain of entity characteristics to traverse to reach the subject of the association beginning with the entity referenced by the “type” attribute.  */
+PlatformParticipant:
+	type=[PlatformEntity|QN]  rolename=ID ('[' lowerBound=INT ':' upperBound=(INT|SIGNED_INT) ']')? (description=STRING)? (':' specializes=[PlatformCharacteristic|QN])?  '->' realizes=[LogicalParticipant|QN] '{'
+		'source:' '[' sourceLowerBound=INT ':' sourceUpperBound=(INT|SIGNED_INT) ']'
+		('path:' path=PlatformPathNode )?
+	'};'
+;
+
+/** A platform PathNode is a single element in a chain that collectively forms a path specification. */
+PlatformPathNode:
+	PlatformParticipantPathNode |
+	PlatformCharacteristicPathNode
+;
+
+/** A platform ParticipantPathNode is a platform PathNode that selects a Participant that references an Entity. This provides a mechanism for reverse navigation from an Entity that participates in an Association back to the Association. */
+PlatformParticipantPathNode:
+	'/' projectedParticipant=[PlatformParticipant|QN]  ( node=PlatformPathNode)
+;
+
+/** A platform CharacteristicPathNode is a platform PathNode that selects a platform Characteristic which is directly contained in a platform Entity or Association. */
+PlatformCharacteristicPathNode:
+	'#' projectedCharacteristic=[PlatformCharacteristic|QN]  ( node=PlatformPathNode)
+
+;
+
+/** A platform View is a platform Query or a platform CompositeQuery. */
+PlatformView:
+	PlatformQuery |
+	PlatformCompositeQuery
+;
+
+/** A platform Query is a specification that defines the content of platform View as a set of platform Characteristics projected from a selected set of related platform Entities. The “specification” attribute captures the specification of a Query as defined by the Query grammar. */
+PlatformQuery:
+	'pquery' name=ID  (description=STRING)? ('->' realizes=[LogicalQuery|QN])? '{'
+		'spec:' specification=STRING
+		'};'
+;
+
+/** A platform CompositeQuery is a collection of two or more platform Views. The “isUnion” attribute specifies whether the composed Views are intended to be mutually exclusive or not. */
+PlatformCompositeQuery:
+	'pcquery' name=ID  (description=STRING)? ('->' realizes=[LogicalCompositeQuery|QN])? '{'
+		isUnion?='isUnion'
+		composition+=PlatformQueryComposition
+		'};'
+;
+
+/** A platform QueryComposition is the mechanism that allows a platform CompositeQuery to be constructed from platform Queries and other platform CompositeQueries. The “rolename” attribute defines the name of the composed platform View within the scope of the composing platform CompositeQuery. The “type” of a platform QueryComposition is the platform View being used to construct the platform CompositeQuery. */
+PlatformQueryComposition:
+	type=[PlatformView|QN] rolename=ID ( '->' realizes=[LogicalQueryComposition|QN])? ';'
+;
+
+
