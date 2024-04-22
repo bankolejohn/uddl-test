@@ -35,12 +35,7 @@ jobs:
                pwd
                ls
 
-            - name: Generate settings.xml for Maven Builds
-              uses: whelk-io/maven-settings-xml-action@v22
-              with:
-                repositories: '[{ "id": "some-repository", "url": "http://34.230.21.125:8081" }]'
-                # plugin_repositories: '[{ "id": "some-plugin-repository", "url": "http://some.plugin.repository.url" }]'
-                servers: '[{ "id": "some-server", "username": "${{ secrets.USER }}", "password": "${{ secrets.PASS }}" }]'
+            
             
 
             - name: Set up JDK 17
@@ -50,5 +45,12 @@ jobs:
                        distribution: 'temurin'
                        cache: maven
 
+            - name: Generate settings.xml for Maven Builds
+              uses: whelk-io/maven-settings-xml-action@v22
+              with:
+                repositories: '[{ "id": "some-repository", "url": "http://34.230.21.125:8081" }]'
+                # plugin_repositories: '[{ "id": "some-plugin-repository", "url": "http://some.plugin.repository.url" }]'
+                servers: '[{ "id": "some-server", "username": "${{ secrets.USER }}", "password": "${{ secrets.PASS }}" }]'
+
             - name: Build code
-              run: mvn clean install
+              run: mvn clean install -s ~/.m2/settings.xml
