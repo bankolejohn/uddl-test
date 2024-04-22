@@ -1,0 +1,54 @@
+name: download artifact and build
+
+on:
+    workflow_dispatch
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v3
+
+            - name: download artifact
+              uses: actions/download-artifact@v4
+              with:
+                name: all-jar-artifacts
+                repository: bankolejohn/uddl-1a
+                github-token: ${{secrets.GITHUB_TOKEN}}
+                run-id: 8414074686
+
+            - name: JFrog CLI Setup
+              uses: jfrog/setup-jfrog-cli@v3
+              env:
+                 JF_URL: ${{ secrets.ARTIFACTORY_URL }}
+                 JF_ACCESS_TOKEN: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+            - name: test
+              run: |
+               jf -v
+               jf rt ping
+            - name: download arti
+              run: jf rt dl libs-snapshot-local $GITHUB_WORKSPACE/ 
+            - name: list files
+              run: |
+               pwd
+               ls
+
+            - name: Generate settings.xml for Maven Builds
+              uses: whelk-io/maven-settings-xml-action@v22
+              with:
+                repositories: '[{ "id": "some-repository", "url": "http://some.repository.url" }]'
+                # plugin_repositories: '[{ "id": "some-plugin-repository", "url": "http://some.plugin.repository.url" }]'
+                servers: '[{ "id": "some-server", "username": "some.user", "password": "some.password" }]'
+            
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v3
+              with:
+                       java-version: '17'
+                       distribution: 'temurin'
+                       cache: maven
+
+            - name: Build code
+              run: mvn clean install
